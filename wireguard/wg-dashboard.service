@@ -1,0 +1,11 @@
+[Unit]
+After=network.service
+
+[Service]
+WorkingDirectory=/opt/wg-dashboard/src
+ExecStart=/usr/bin/python3 /opt/wg-dashboard/src/dashboard.py
+Restart=always
+
+
+[Install]
+WantedBy=default.target

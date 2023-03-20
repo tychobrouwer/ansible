@@ -1,0 +1,5 @@
+---
+docker_ce_deb_repo: deb https://download.docker.com/linux/debian bullseye stable
+docker_ce_deb_gpg: https://download.docker.com/linux/debian/gpg
+docker_ce_centos_baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable/
+docker_ce_centos_gpg: https://download.docker.com/linux/centos/gpg

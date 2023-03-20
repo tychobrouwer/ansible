@@ -1,0 +1,4 @@
+---
+root_hints_url: https://www.internic.net/domain/named.root
+pihole_download_url: https://install.pi-hole.net
+pihole_install_script: /root/pihole-install.sh

@@ -1,0 +1,74 @@
+---
+- name: Install Minecraft server
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  vars:
+    java_package: openjdk-17-jre-headless
+
+  pre_tasks:
+    - name: Overwrite vars for Red Hat
+      set_fact:
+        java_package: java-17-openjdk-headless
+      when: ansible_os_family == "RedHat"
+
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Install Java and Git package
+      ansible.builtin.package:
+        name:
+          - "{{ java_package }}"
+          - git
+        state: latest
+
+    - name: Ensure Spigot buildtools are present
+      ansible.builtin.get_url:
+        url: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+        dest: /root/BuildTools.jar
+        mode: "0755"
+
+    - name: Check if current version is installed
+      ansible.builtin.stat:
+        path: "/root/spigot-{{ server_version }}.jar"
+      register: current_spigot
+
+    - name: Run buildtools if version is not present
+      ansible.builtin.command: "java -jar /root/BuildTools.jar --rev {{ server_version }} --output-dir /root"
+      when: not current_spigot.stat.exists
+
+    - name: Copy the jar file without version
+      ansible.builtin.copy:
+        src: "/root/spigot-{{ server_version }}.jar"
+        dest: /root/spigot.jar
+        remote_src: yes
+
+    - name: Ensure minecraft service file is on remote (systemd)
+      ansible.builtin.copy:
+        src: ./minecraft.service
+        dest: /etc/systemd/system/minecraft.service
+        mode: "0664"
+      when: not ansible_distribution == "CentOS"
+
+    - name: Ensure config files are present on remote
+      ansible.builtin.copy:
+        src: ./config/
+        dest: /root
+        mode: "0644"
+
+    - name: Ensure minecraft service is enabled and started
+      ansible.builtin.service:
+        name: minecraft
+        state: started
+        enabled: true

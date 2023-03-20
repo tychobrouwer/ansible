@@ -1,0 +1,10 @@
+---
+install_location: /opt
+jellyfin_download_folder: https://repo.jellyfin.org/releases/server/linux/stable/combined
+jellyfin_version: 10.8.9
+ffmpeg_download_folder: https://repo.jellyfin.org/releases/server/debian/versions/jellyfin-ffmpeg
+ffmpeg_version: 5.1.2-7
+rpmfusion_free_repo: https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
+rpmfusion_nonfree_repo: https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm
+user_name: jellyfin
+share_group: sharegroup

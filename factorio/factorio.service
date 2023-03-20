@@ -1,0 +1,14 @@
+[Unit]
+After=network.service
+
+[Service]
+Type=simple
+User=factorio
+Group=factorio
+ExecStart=/opt/factorio/bin/x64/factorio --start-server /opt/factorio/factory.zip --bind 192.168.178.112 > output.log
+TimeoutStartSec=0
+RemainAfterExit=yes
+
+
+[Install]
+WantedBy=default.target

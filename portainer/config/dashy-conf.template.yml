@@ -1,0 +1,167 @@
+---
+# Page meta info, like heading, footer text and nav links
+pageInfo:
+  title: Dashboard
+  description: ---REDACTED---
+
+# Optional app settings and configuration
+appConfig:
+  theme: lissy # dashy-docs, one-dark, lissy
+  defaultOpeningMethod: sametab
+  hideComponents:
+    hideSettings: true
+  preventWriteToDisk: true
+  statusCheckInterval: 20
+  disableConfiguration: true
+  webSearch:
+    searchEngine: google
+    openingMethod: sametab
+  customCss: >
+    #dashy{
+      height:100vh;
+      display:flex;
+      flex-flow:column
+    }
+    html[data-theme=lissy] .home{
+      flex:1 1 auto;
+      padding-bottom:0!important
+    }
+    .show-btn[data-v-0222a7c0]{
+      display:none
+    }
+    form.normal[data-v-1958a3d0]{
+      border-radius:0 0 var(--curve-factor-navbar) var(--curve-factor-navbar)!important
+    }
+    form.normal label[data-v-1958a3d0]{
+      display:none
+    }
+    form.normal input[data-v-1958a3d0]{
+      font-size:23px!important;
+      width:300px!important;
+      height:1.4rem!important
+    }
+    .show-hide-container[data-v-0dc5c42a]{
+      display:none
+    }
+    .edit-mode-item{
+      display:none
+    }
+    .opening-method-icon svg{
+      display:none
+    }
+    .tooltip{
+      display:none!important
+    }
+    .indicator[data-v-4b522b5b]{
+      cursor:pointer!important
+    }
+    .item.size-medium .tile-title {
+      height:auto
+    }
+    .item-icon.wrapper-medium {
+      display:flex;
+      align-items:center;
+      padding:5px 0
+    }
+    .item.size-medium div img {
+      margin-bottom:0
+    }
+
+# Main content - An array of sections, each containing an array of items
+sections:
+  - name: Home Network
+    icon: fas fa-network-wired
+    displayData:
+      itemCountX: 2
+
+    items:
+      - title: Proxmox VE
+        icon: hl-proxmox
+        url: ---REDACTED---
+        statusCheck: true
+        statusCheckUrl: https://192.168.178.100:8006
+        statusCheckAllowInsecure: true
+
+      - title: Passbolt
+        icon: ---REDACTED---
+        url: ---REDACTED---
+        statusCheck: true
+        statusCheckAcceptCodes: 401
+
+      - title: Portfolio
+        url: ---REDACTED---
+        icon: fas fa-globe
+
+      - title: Grafana
+        icon: hl-grafana
+        url: ---REDACTED---
+        statusCheck: true
+
+      - title: Pi-Hole
+        icon: hl-pihole-unbound
+        url: ---REDACTED---
+        statusCheck: true
+
+      - title: Wireguard
+        icon: hl-wireguard
+        url: ---REDACTED---
+        statusCheck: true
+
+      - title: Portainer
+        icon: hl-portainer
+        url: ---REDACTED---
+        statusCheck: true
+
+      - title: Jellyfin
+        url: ---REDACTED---
+        icon: hl-jellyfin
+        statusCheck: true
+
+      - title: Traefik
+        url: ---REDACTED---
+        icon: hl-traefik
+        statusCheck: true
+        statusCheckUrl: http://192.168.178.103:8080
+
+      - title: qBittorrent
+        url: ---REDACTED---
+        icon: hl-qbittorrent
+        statusCheck: true
+
+  - name: Media
+    icon: fas fa-tv
+    displayData:
+      itemCountX: 2
+
+    items:
+      - title: Google Calandar
+        icon: favicon
+        url: https://calendar.google.com/
+
+      - title: Youtube
+        icon: hl-youtube-play
+        url: https://www.youtube.com/
+
+      - title: Netflix
+        icon: favicon
+        url: https://www.netflix.com/browse
+
+      - title: Videoland
+        icon: favicon
+        url: https://v2.videoland.com/
+
+      - title: Spotify
+        icon: hl-spotify
+        url: https://open.spotify.com/
+
+      - title: iCloud
+        icon: favicon
+        url: https://www.icloud.com/
+
+      - title: Reddit
+        icon: favicon
+        url: https://www.reddit.com/
+
+      - title: IMDB
+        icon: favicon
+        url: https://www.imdb.com/

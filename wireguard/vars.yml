@@ -1,0 +1,3 @@
+---
+dashboard_git_repo: https://github.com/donaldzou/WGDashboard.git
+dashboard_install_location: /opt/wg-dashboard

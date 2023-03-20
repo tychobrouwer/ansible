@@ -1,0 +1,65 @@
+---
+- name: Setup website server
+  hosts: all
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure lighttpd is installed
+      ansible.builtin.package:
+        name: lighttpd
+        state: present
+
+    - name: Ensure lighttpd config file is present
+      ansible.builtin.copy:
+        src: ./lighttpd.conf
+        dest: /etc/lighttpd/lighttpd.conf
+
+    - name: Ensure lighttpd service file is present
+      ansible.builtin.copy:
+        src: ./lighttpd
+        dest: /etc/init.d/lighttpd
+        mode: "0755"
+
+    - name: Make sure lighttpd is started
+      ansible.builtin.service:
+        name: lighttpd
+        state: started
+        enabled: yes
+
+    - name: Ensure lighttpd group exists
+      ansible.builtin.group:
+        name: "lighttpd"
+        state: present
+
+    - name: Ensure lighttpd user exists
+      ansible.builtin.user:
+        name: "lighttpd"
+        group: "lighttpd"
+        home: /var/www/html
+        shell: /sbin/nologin
+        state: present
+
+    - name: Ensure log directory permissions are set
+      ansible.builtin.file:
+        path: /var/log/lighttpd
+        owner: lighttpd
+        group: lighttpd
+        recurse: yes
+
+    - name: Clone website to local
+      ansible.builtin.git:
+        repo: git@github.com:TychoBrouwer/personal-website-elm.git
+        dest: /var/www/html/personal-website-elm
+        single_branch: yes
+        version: main

@@ -1,0 +1,21 @@
+---
+- name: Install Radarr, Sonarr, and Prowlarr
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    

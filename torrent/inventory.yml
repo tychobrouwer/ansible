@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    torrent:
+      ansible_host: 192.168.178.105
+  vars:
+      ansible_user: root

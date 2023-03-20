@@ -1,0 +1,94 @@
+---
+- name: Install Pi-hole
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  handlers:
+    - name: Restart unbound
+      ansible.builtin.service:
+        name: unbound
+        state: restarted
+
+    - name: Pihole enable
+      ansible.builtin.command: pihole enable && pihole restartdns
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure Unbound is installed
+      ansible.builtin.package:
+        name:
+          - unbound
+        state: present
+
+    - name: Ensure Pi-hole folder is present
+      ansible.builtin.file:
+        path: /etc/pihole
+        state: directory
+
+    - name: Ensure setup vars file is on remote
+      ansible.builtin.copy:
+        src: ./setupVars.conf
+        dest: /etc/pihole/setupVars.conf
+        mode: "0644"
+
+    - name: Ensure Unbound folder is present
+      ansible.builtin.file:
+        path: /etc/unbound
+        state: directory
+
+    - name: Ensure Unbound config folder is present
+      ansible.builtin.file:
+        path: /etc/unbound/unbound.conf.d
+        state: directory
+
+    - name: Copy unbound config file to remote
+      ansible.builtin.copy:
+        src: ./unbound.conf
+        dest: /etc/unbound/unbound.conf.d/pi-hole.conf
+        mode: "0644"
+      notify: Restart unbound
+
+    - name: Ensure root hints file for unbound exist
+      ansible.builtin.get_url:
+        url: "{{ root_hints_url }}"
+        dest: /var/lib/unbound/root.hints
+        force: true
+        mode: "0644"
+
+    - name: Get Pi-hole install script with exectution
+      ansible.builtin.get_url:
+        url: "{{ pihole_download_url }}"
+        dest: "{{ pihole_install_script }}"
+        force: true
+        mode: "0755"
+
+    - name: Ensure Pi-hole is installed
+      block:
+        - name: Try using Pi-hole
+          ansible.builtin.command: pihole --version
+          register: which_pihole
+          changed_when: false
+
+      rescue:
+        - name: No Pi-hole, run install script
+          ansible.builtin.command: "{{ pihole_install_script }} --unattended"
+          notify: Pihole enable
+          failed_when: false
+
+    - name: Ensure Pi-hole password is set
+      ansible.builtin.command: "pihole -a -p {{ pihole_admin_password }}"
+      changed_when: false

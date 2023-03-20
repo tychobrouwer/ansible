@@ -1,0 +1,153 @@
+# https://medium.com/@MARatsimbazafy/journey-to-deep-learning-nvidia-gpu-passthrough-to-lxc-container-97d0bc474957
+---
+- name: Setup proxmox server
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  handlers:
+    - name: Restart pveproxy
+      ansible.builtin.service:
+        name: pveproxy
+        state: restarted
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Ensure packages are updated
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name:
+          - pve-ha-lrm
+          - pve-ha-crm
+          - pvesr.timer
+          - corosync.service
+        state: stopped
+        enabled: false
+
+    - name: Ensure packages are installed
+      ansible.builtin.apt:
+        name:
+          - neofetch
+          - htop
+          - iotop
+          - ifupdown2
+        state: present
+
+    - name: Ensure dark theme file is present
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/Weilbyte/PVEDiscordDark/master/PVEDiscordDark.sh
+        dest: /root/PVEDiscordDark.sh
+        mode: "0755"
+
+    - name: Ensure dark theme is installed
+      ansible.builtin.command: /root/PVEDiscordDark.sh install
+      args:
+        creates: /usr/share/pve-manager/css/dd_style.css
+
+    - name: Ensure dark theme personalization are applied
+      ansible.builtin.copy:
+        src: ./dd_style.css
+        dest: /usr/share/pve-manager/css/dd_style.css
+        mode: "0644"
+
+    - name: Ensure backup of proxmoxlib.js is present
+      ansible.builtin.copy:
+        src: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        dest: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js.bak
+        force: false
+        remote_src: true
+
+    - name: Ensure subscription warning is disabled
+      ansible.builtin.replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "Ext.Msg.show.*?\n.*?title: gettext..No valid subscription..,"
+        replace: >
+          void({
+                                      title: gettext('No valid subscription'),
+      notify: Restart pveproxy
+
+    - name: Ensure icloudpd python is installed
+      ansible.builtin.pip:
+        name: icloudpd
+        state: present
+
+    - name: Ensure share group exists
+      ansible.builtin.group:
+        name: "{{ share_group }}"
+        gid: 3500
+        state: present
+
+    - name: Ensure share user group exists
+      ansible.builtin.group:
+        name: "{{ shareuser_name }}"
+        gid: 3501
+        state: present
+
+    - name: Ensure share user exists
+      ansible.builtin.user:
+        name: "{{ shareuser_name }}"
+        group: "{{ shareuser_name }}"
+        groups: "{{ share_group }}"
+        uid: 1000
+        state: present
+
+    - name: Ensure root is in share group
+      ansible.builtin.user:
+        name: root
+        groups: "{{ share_group }}"
+        state: present
+
+    - name: Get proxmox version
+      ansible.builtin.command: uname -r
+      changed_when: false
+      register: proxmox_info
+
+    - name: Install proxmox headers are installed
+      ansible.builtin.apt:
+        name: "pve-headers-{{ proxmox_info.stdout }}"
+        state: present
+
+    # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
+    - name: Ensure nvidia installer is pressent
+      ansible.builtin.get_url:
+        url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
+        dest: /root/NVIDIA-Linux-x86_64-525.89.02.run
+        mode: "0755"
+
+    - name: Run nvidia installer
+      ansible.builtin.command: /root/NVIDIA-Linux-x86_64-525.89.02.run -asq
+      register: nvidia_installer
+      changed_when: "'appears to already be loaded' not in nvidia_installer.stdout"
+
+    - name: ensure nvidia rules are present
+      ansible.builtin.copy:
+        src: ./70-nvidia.rules
+        dest: /etc/udev/rules.d/70-nvidia.rules
+        mode: "0644"
+
+    - name: Install nvidia monitoring package
+      ansible.builtin.apt:
+        name:
+          - nvidia-smi
+        state: present
+
+    - name: Add nvidia and nvidia_uvm to modules
+      ansible.builtin.blockinfile:
+        path: /etc/modules-load.d/modules.conf
+        block: |
+          nvidia
+          nvidia_uvm
+
+    - name: Update initramfs
+      ansible.builtin.command: update-initramfs -u
+      changed_when: false

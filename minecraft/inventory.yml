@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    minecraft:
+      ansible_host: 192.168.178.113
+  vars:
+      ansible_user: root

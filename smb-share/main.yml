@@ -1,0 +1,75 @@
+---
+- name: Install SMB share
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure samba is installed
+      ansible.builtin.package:
+        name:
+          - samba
+        state: present
+
+    - name: Ensure share group exists
+      ansible.builtin.group:
+        name: "{{ share_group }}"
+        gid: 3500
+        state: present
+
+    - name: Ensure samba user group exists
+      ansible.builtin.group:
+        name: "{{ sambauser_name }}"
+        gid: 3501
+        state: present
+
+    - name: Ensure samba user exists
+      ansible.builtin.user:
+        name: "{{ sambauser_name }}"
+        group: "{{ sambauser_name }}"
+        groups: "{{ share_group }}"
+        uid: 1000
+        password: "{{ sambauser_password | password_hash(hashtype='sha512', salt=sambauser_salt) }}"
+        state: present
+
+    - name: Ensure root is in share group
+      ansible.builtin.user:
+        name: root
+        groups: "{{ share_group }}"
+        state: present
+
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /share
+        state: directory
+        mode: "0775"
+
+    - name: Copy smb config to remote
+      ansible.builtin.copy:
+        src: ./smb.conf
+        dest: /etc/samba/smb.conf
+        mode: "0664"
+
+    - name: Ensure smb password is set
+      ansible.builtin.shell: "(echo {{ sambauser_password }}; echo {{ sambauser_password }}) | smbpasswd -s -a {{ sambauser_name }}"
+      changed_when: false
+
+    - name: Ensure smbd service is started and enabled
+      ansible.builtin.service:
+        name: smbd
+        state: started
+        enabled: true

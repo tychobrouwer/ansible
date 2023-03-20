@@ -1,0 +1,135 @@
+---
+- name: Setup torrent client
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+    - name: Ensure openvpn is installed
+      ansible.builtin.package:
+        name:
+          # - unzip
+          - openvpn
+        state: present
+
+  tasks:
+    - name: Ensure share group exists
+      ansible.builtin.group:
+        name: "{{ share_group }}"
+        gid: 3500
+        state: present
+
+    - name: Ensure share user group exists
+      ansible.builtin.group:
+        name: "{{ torrentuser_name }}"
+        gid: 3501
+        state: present
+
+    - name: Ensure share user exists
+      ansible.builtin.user:
+        name: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
+        groups: "{{ share_group }}"
+        uid: 1000
+        password: "{{ torrentuser_password | password_hash(hashtype='sha512', salt=torrentuser_salt) }}"
+        state: present
+
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /share
+        state: directory
+        mode: "0775"
+
+    - name: Ensure qBitttorrent is installed
+      ansible.builtin.package:
+        name: qbittorrent-nox
+        state: present
+
+    - name: Ensure qbittorrent config folder is present
+      ansible.builtin.file:
+        path: "/home/{{ torrentuser_name }}/.config"
+        state: directory
+        owner: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
+
+    - name: Ensure qbittorrent config folder is present
+      ansible.builtin.file:
+        path: "/home/{{ torrentuser_name }}/.config/qBittorrent"
+        state: directory
+        owner: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
+
+    - name: Ensure qbittorrent config file is on remote
+      ansible.builtin.copy:
+        src: ./qbittorrent.conf
+        dest: "/home/{{ torrentuser_name }}/.config/qBittorrent/qBittorrent.conf"
+        mode: "0664"
+        owner: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
+
+    - name: Ensure torrent download path is set
+      ansible.builtin.command: "runuser -l {{ torrentuser_name }} -c 'qbittorrent-nox --save-path=/share/video-share'"
+      changed_when: false
+
+    - name: Ensure qbittorrent service file is on remote (systemd)
+      ansible.builtin.copy:
+        src: ./qbittorrent.service
+        dest: /etc/systemd/system/qbittorrent.service
+        mode: "0664"
+      when: not ansible_distribution == "CentOS"
+
+    - name: Ensure qbittorrent service file is on remote (sysvinit)
+      ansible.builtin.copy:
+        src: ./qbittorrent
+        dest: /etc/init.d/qbittorrent
+        mode: "0755"
+      when: ansible_distribution == "CentOS"
+
+    - name: Clone qBittorrent theme git repo
+      ansible.builtin.git:
+        repo: https://github.com/repslet/nightwalker.git
+        dest: "/home/{{ torrentuser_name }}/nightwalker"
+        force: yes
+
+    - name: Ensure NordVPN auth file is present on remore
+      ansible.builtin.copy:
+        src: ./auth.txt
+        dest: /etc/openvpn/auth.txt
+        mode: "0644"
+
+    - name: Ensure NordVPN connection file is present on remore
+      ansible.builtin.copy:
+        src: ./nl986.conf
+        dest: /etc/openvpn/nl986.conf
+        mode: "0644"
+
+    - name: Ensure openvpn config is present on remore
+      ansible.builtin.copy:
+        src: ./openvpn
+        dest: /etc/default/openvpn
+        mode: "0644"
+
+    - name: Ensure openvpn service is enabled and started
+      ansible.builtin.service:
+        name: openvpn
+        state: started
+        enabled: true
+
+    - name: Ensure qbittorrent service is enabled and reloaded
+      ansible.builtin.service:
+        name: qbittorrent
+        state: reloaded
+        enabled: true

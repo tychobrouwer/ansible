@@ -1,0 +1,11 @@
+[Unit]
+Description=Minecraft server service
+After=network.target
+
+[Service]
+Type=exec
+WorkingDirectory=/root
+ExecStart=java -Xms6G -Xmx6G -XX:+UseLargePages -XX:LargePageSizeInBytes=2m -jar /root/spigot.jar --noconsole
+
+[Install]
+WantedBy=multi-user.target

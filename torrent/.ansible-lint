@@ -1,0 +1,4 @@
+skip_list:
+  - "package-latest"
+  - "latest[git]"
+  - "run_once[task]"

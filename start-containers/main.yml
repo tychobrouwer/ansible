@@ -1,0 +1,69 @@
+---
+- name: Start Proxmox containers
+  hosts: proxmox
+
+  vars_files:
+  - vars-private.yml
+
+  tasks:
+    - name: Ensure proxmoxer python package is installed
+      ansible.builtin.pip:
+        name: proxmoxer
+        state: present
+
+    - name: Ensure containers are started
+      community.general.proxmox:
+        vmid: "{{ item }}"
+        api_user: root@pam
+        api_password: "{{ pve_password }}"
+        api_host: pve
+        unprivileged: true
+        state: started
+      loop:
+        - 101
+        - 102
+        - 103
+        - 104
+        - 105
+        - 106
+        - 111
+        - 112
+        - 113
+        - 121
+
+    - name: Ensure containers have an addressed ip
+      ansible.builtin.command: "pct exec {{ item }} dhclient"
+      loop:
+        - 101
+        - 102
+        - 103
+        - 104
+        - 105
+        - 106
+        - 111
+        - 112
+        - 113
+        - 121
+      changed_when: false
+
+    - name: Ensure wg-dashboard is running
+      ansible.builtin.command: "pct exec 102 systemctl restart wg-dashboard"
+      changed_when: false
+
+- name: Ensure containers are updated
+  hosts:
+    - infrastructure
+    - entertainment
+    - projects
+
+  tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
