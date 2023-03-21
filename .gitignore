@@ -11,3 +11,4 @@ ops.json
 dashy-conf.yml
 prometheus-conf.yml
 wg0.conf
+traefik.yml
