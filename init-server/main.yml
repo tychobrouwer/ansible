@@ -42,7 +42,7 @@
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         state: present
-        validate: 'sshd -t -f %s'
+        validate: "sshd -t -f %s"
       with_items:
         - regexp: "^PasswordAuthentication"
           line: "PasswordAuthentication no"

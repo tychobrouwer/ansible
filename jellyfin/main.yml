@@ -89,6 +89,13 @@
         state: directory
         mode: "0775"
 
+- name: Install jellyfin
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     - name: Get and unarchive jellyfin headless server files if not present
       ansible.builtin.unarchive:
         src: "{{ jellyfin_download_folder }}/jellyfin_{{ jellyfin_version }}_amd64.tar.gz"
@@ -161,19 +168,26 @@
         mode: "0755"
         recurse: true
 
+- name: Install NVIDIA and configure drivers
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
-    - name: Ensure nvidia installer is pressent
+    - name: Ensure NVIDIA installer is present
       ansible.builtin.get_url:
-        url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
-        dest: /root/NVIDIA-Linux-x86_64-525.89.02.run
+        url: "{{ NVIDIA_download_url }}"
+        dest: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run"
         mode: "0755"
 
-    - name: Run nvidia installer
-      ansible.builtin.command: /root/NVIDIA-Linux-x86_64-525.89.02.run -asq
+    - name: Run NVIDIA installer
+      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq"
       register: nvidia_installer
       changed_when: "'appears to already be loaded' not in nvidia_installer.stdout"
 
-    - name: Install nvidia monitoring package
+    - name: Install NVIDIA monitoring package
       ansible.builtin.apt:
         name:
           - nvidia-smi

@@ -1,19 +1,6 @@
 ---
-- name: Install Pi-hole
+- name: Initiate server
   hosts: all
-
-  vars_files:
-    - vars.yml
-    - vars-private.yml
-
-  handlers:
-    - name: Restart unbound
-      ansible.builtin.service:
-        name: unbound
-        state: restarted
-
-    - name: Pihole enable
-      ansible.builtin.command: pihole enable && pihole restartdns
 
   pre_tasks:
     - name: Update cache if needed (Debian)
@@ -28,22 +15,29 @@
         state: latest
 
   tasks:
-    - name: Ensure Unbound is installed
-      ansible.builtin.package:
-        name:
-          - unbound
-        state: present
-
     - name: Ensure Pi-hole folder is present
       ansible.builtin.file:
         path: /etc/pihole
         state: directory
 
-    - name: Ensure setup vars file is on remote
-      ansible.builtin.copy:
-        src: ./setupVars.conf
-        dest: /etc/pihole/setupVars.conf
-        mode: "0644"
+- name: Install Unbound
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  handlers:
+    - name: Restart unbound
+      ansible.builtin.service:
+        name: unbound
+        state: restarted
+
+  tasks:
+    - name: Ensure Unbound is installed
+      ansible.builtin.package:
+        name:
+          - unbound
+        state: present
 
     - name: Ensure Unbound folder is present
       ansible.builtin.file:
@@ -69,7 +63,25 @@
         force: true
         mode: "0644"
 
-    - name: Get Pi-hole install script with exectution
+- name: Install Pi-Hole
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  handlers:
+    - name: Pihole enable
+      ansible.builtin.command: pihole enable && pihole restartdns
+
+  tasks:
+    - name: Ensure setup vars file is on remote
+      ansible.builtin.copy:
+        src: ./setupVars.conf
+        dest: /etc/pihole/setupVars.conf
+        mode: "0644"
+
+    - name: Get Pi-hole install script with execution
       ansible.builtin.get_url:
         url: "{{ pihole_download_url }}"
         dest: "{{ pihole_install_script }}"

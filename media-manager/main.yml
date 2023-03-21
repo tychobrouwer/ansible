@@ -1,5 +1,5 @@
 ---
-- name: Install Radarr, Sonarr, and Prowlarr
+- name: Container setup before install
   hosts: all
 
   vars_files:
@@ -66,6 +66,19 @@
         groups: "{{ media_group }}"
         state: present
 
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /share
+        state: directory
+        mode: "0775"
+
+- name: Install Radarr
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     - name: Ensure Radarr lib directory exists
       ansible.builtin.file:
         path: /var/lib/radarr
@@ -74,6 +87,38 @@
         group: "{{ radarr_name }}"
         mode: "0755"
 
+    - name: Ensure Radarr tar is present
+      ansible.builtin.get_url:
+        url: "{{ radarr_url }}"
+        dest: /root/radarr.linux-core-x64.tar.gz
+
+    - name: Ensure Radarr program file are in opt
+      ansible.builtin.unarchive:
+        src: /root/radarr.linux-core-x64.tar.gz
+        dest: /opt
+        group: "{{ radarr_name }}"
+        owner: "{{ radarr_name }}"
+        remote_src: yes
+
+    - name: Ensure Radarr service file is on remote
+      ansible.builtin.copy:
+        src: ./radarr.service
+        dest: /etc/systemd/system/radarr.service
+        mode: "0664"
+
+    - name: Ensure Radarr service is enabled and started
+      ansible.builtin.service:
+        name: radarr
+        state: started
+        enabled: true
+
+- name: Install Prowlarr
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     - name: Ensure Prowlarr lib directory exists
       ansible.builtin.file:
         path: /var/lib/prowlarr
@@ -107,31 +152,13 @@
         state: started
         enabled: true
 
-    - name: Ensure Radarr tar is present
-      ansible.builtin.get_url:
-        url: "{{ radarr_url }}"
-        dest: /root/radarr.linux-core-x64.tar.gz
+- name: Install Sonarr
+  hosts: all
 
-    - name: Ensure Radarr program file are in opt
-      ansible.builtin.unarchive:
-        src: /root/radarr.linux-core-x64.tar.gz
-        dest: /opt
-        group: "{{ radarr_name }}"
-        owner: "{{ radarr_name }}"
-        remote_src: yes
+  vars_files:
+    - vars.yml
 
-    - name: Ensure Radarr service file is on remote
-      ansible.builtin.copy:
-        src: ./radarr.service
-        dest: /etc/systemd/system/radarr.service
-        mode: "0664"
-
-    - name: Ensure Radarr service is enabled and started
-      ansible.builtin.service:
-        name: radarr
-        state: started
-        enabled: true
-
+  tasks:
     - name: Ensure apt-key Sonarr is installed
       ansible.builtin.apt_key:
         keyserver: hkp://keyserver.ubuntu.com:80
@@ -151,9 +178,3 @@
       ansible.builtin.user:
         name: "{{ sonarr_name }}"
         groups: "{{ media_group }}"
-
-    - name: Ensure share folder exists
-      ansible.builtin.file:
-        path: /share
-        state: directory
-        mode: "0775"

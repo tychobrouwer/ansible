@@ -3,7 +3,7 @@
   hosts: proxmox
 
   vars_files:
-  - vars-private.yml
+    - vars-private.yml
 
   tasks:
     - name: Ensure proxmoxer python package is installed
@@ -26,6 +26,7 @@
         - 104
         - 105
         - 106
+        - 107
         - 111
         - 112
         - 113
@@ -40,6 +41,7 @@
         - 104
         - 105
         - 106
+        - 107
         - 111
         - 112
         - 113

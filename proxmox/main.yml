@@ -1,16 +1,9 @@
-# https://medium.com/@MARatsimbazafy/journey-to-deep-learning-nvidia-gpu-passthrough-to-lxc-container-97d0bc474957
 ---
-- name: Setup proxmox server
+- name: Setup Proxmox server
   hosts: all
 
   vars_files:
     - vars.yml
-
-  handlers:
-    - name: Restart pveproxy
-      ansible.builtin.service:
-        name: pveproxy
-        state: restarted
 
   pre_tasks:
     - name: Update cache if needed (Debian)
@@ -59,6 +52,19 @@
           - ifupdown2
         state: present
 
+- name: Applying personalization to Proxmox
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  handlers:
+    - name: Restart pveproxy
+      ansible.builtin.service:
+        name: pveproxy
+        state: restarted
+
+  tasks:
     - name: Ensure dark theme file is present
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/Weilbyte/PVEDiscordDark/master/PVEDiscordDark.sh
@@ -97,6 +103,13 @@
         name: icloudpd
         state: present
 
+- name: Create share/ SMB users and folders
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     - name: Ensure share group exists
       ansible.builtin.group:
         name: "{{ share_group }}"
@@ -145,6 +158,13 @@
         recurse: true
         mode: "0775"
 
+- name: Install NVIDIA drivers
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
     - name: Get proxmox version
       ansible.builtin.command: uname -r
       changed_when: false
@@ -156,30 +176,30 @@
         state: present
 
     # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
-    - name: Ensure nvidia installer is pressent
+    - name: Ensure NVIDIA installer is present
       ansible.builtin.get_url:
-        url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
-        dest: /root/NVIDIA-Linux-x86_64-525.89.02.run
+        url: "{{ NVIDIA_download_url }}"
+        dest: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run"
         mode: "0755"
 
-    - name: Run nvidia installer
-      ansible.builtin.command: /root/NVIDIA-Linux-x86_64-525.89.02.run -asq
+    - name: Run NVIDIA installer
+      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq"
       register: nvidia_installer
       changed_when: "'appears to already be loaded' not in nvidia_installer.stdout"
 
-    - name: ensure nvidia rules are present
+    - name: ensure NVIDIA rules are present
       ansible.builtin.copy:
         src: ./70-nvidia.rules
         dest: /etc/udev/rules.d/70-nvidia.rules
         mode: "0644"
 
-    - name: Install nvidia monitoring package
+    - name: Install NVIDIA monitoring package
       ansible.builtin.apt:
         name:
           - nvidia-smi
         state: present
 
-    - name: Add nvidia and nvidia_uvm to modules
+    - name: Add NVIDIA and nvidia_uvm to modules
       ansible.builtin.blockinfile:
         path: /etc/modules-load.d/modules.conf
         block: |

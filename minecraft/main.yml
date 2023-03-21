@@ -35,22 +35,22 @@
 
     - name: Ensure Spigot buildtools are present
       ansible.builtin.get_url:
-        url: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+        url: "{{ buildtools_url }}"
         dest: /root/BuildTools.jar
         mode: "0755"
 
     - name: Check if current version is installed
       ansible.builtin.stat:
-        path: "/root/spigot-{{ server_version }}.jar"
+        path: "/root/spigot-{{ spigot_version }}.jar"
       register: current_spigot
 
     - name: Run buildtools if version is not present
-      ansible.builtin.command: "java -jar /root/BuildTools.jar --rev {{ server_version }} --output-dir /root"
+      ansible.builtin.command: "java -jar /root/BuildTools.jar --rev {{ spigot_version }} --output-dir /root"
       when: not current_spigot.stat.exists
 
     - name: Copy the jar file without version
       ansible.builtin.copy:
-        src: "/root/spigot-{{ server_version }}.jar"
+        src: "/root/spigot-{{ spigot_version }}.jar"
         dest: /root/spigot.jar
         remote_src: yes
 

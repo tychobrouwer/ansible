@@ -1,3 +1,5 @@
 ---
 shareuser_name: shareuser
 share_group: sharegroup
+NVIDIA_download_url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
+NVIDIA_version: 525.89.02

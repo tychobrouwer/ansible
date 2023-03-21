@@ -18,6 +18,8 @@ all:
           ansible_host: 192.168.178.105
         website:
           ansible_host: 192.168.178.106
+        media-manager:
+          ansible_host: 192.168.178.107
     entertainment:
       hosts:
         jellyfin:
@@ -31,4 +33,4 @@ all:
         accontroller:
           ansible_host: 192.168.178.121
   vars:
-      ansible_user: root
+    ansible_user: root

@@ -1,5 +1,5 @@
 ---
-- name: Install Portainer
+- name: Setup server
   hosts: all
 
   vars_files:
@@ -28,6 +28,12 @@
         state: present
 
   tasks:
+    - name: Ensure config files are present on remote
+      ansible.builtin.copy:
+        src: ./config/
+        dest: /root
+        mode: "0644"
+
     - name: Ensure UFW rule for private CIDR block is present
       ansible.builtin.command: ufw allow from 10.0.0.0/8
       register: ufw_cidr_a
@@ -53,6 +59,14 @@
       register: ufw_enable
       changed_when: "'active and enabled' not in ufw_enable.stdout"
 
+- name: Install Docker
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  tasks:
     - name: Ensure docker GPG signing key is installed (Debian)
       ansible.builtin.apt_key:
         url: "{{ docker_ce_deb_gpg }}"
@@ -93,17 +107,18 @@
         state: started
         enabled: true
 
+- name: Install Traefik container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure web network for Traefik is present
       docker_network:
         name: web
         internal: false
         state: present
-
-    - name: Ensure config files are present on remote
-      ansible.builtin.copy:
-        src: ./config/
-        dest: /root
-        mode: "0644"
 
     - name: Ensure Traefik reverse proxy Docker container is running
       community.docker.docker_container:
@@ -136,6 +151,13 @@
         networks:
           - name: web
 
+- name: Install Portainer container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Portainer Docker volume is present
       community.docker.docker_volume:
         name: portainer_data
@@ -161,6 +183,13 @@
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
 
+- name: Install Dashy container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Dashy Docker container is running
       community.docker.docker_container:
         name: dashy
@@ -178,6 +207,13 @@
           - /root/dashy-conf.yml:/app/public/conf.yml
         restart_policy: unless-stopped
 
+- name: Install Cloudflare DDNS container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Cloudflare DDNS Docker container is running
       community.docker.docker_container:
         name: cloudflare-ddns
@@ -188,6 +224,13 @@
           PROXIED: "true"
         restart_policy: unless-stopped
 
+- name: Install Prometheus pve exporter container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Prometheus pve exporter Docker container is running
       community.docker.docker_container:
         name: prometheus-pve-exporter
@@ -198,6 +241,13 @@
           - /root/prometheus-pve-exporter-conf.yml:/etc/pve.yml
         restart_policy: unless-stopped
 
+- name: Install Prometheus container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Prometheus Docker container is running
       community.docker.docker_container:
         name: prometheus
@@ -208,6 +258,13 @@
           - /root/prometheus-conf.yml:/etc/prometheus/prometheus.yml
         restart_policy: unless-stopped
 
+- name: Install Grafana container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Grafana Docker volume is present
       community.docker.docker_volume:
         name: grafana_data
@@ -239,6 +296,13 @@
           - grafana_data:/var/lib/grafana
         restart_policy: unless-stopped
 
+- name: Install Passbolt database container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Passbolt database Docker volume is present
       community.docker.docker_volume:
         name: database_volume
@@ -258,6 +322,13 @@
         ports:
           - "3306:3306"
 
+- name: Install Passbolt container
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
     - name: Ensure Passbolt gpg Docker volume is present
       community.docker.docker_volume:
         name: gpg_volume
@@ -270,7 +341,15 @@
       community.docker.docker_container:
         name: passbolt
         image: passbolt/passbolt:latest-ce
-        command: ["/usr/bin/wait-for.sh", "-t", "0", "192.168.178.103:3306", "--", "/docker-entrypoint.sh"]
+        command:
+          [
+            "/usr/bin/wait-for.sh",
+            "-t",
+            "0",
+            "192.168.178.103:3306",
+            "--",
+            "/docker-entrypoint.sh",
+          ]
         env:
           APP_FULL_BASE_URL: "https://passbolt.{{ root_domain }}"
           DATASOURCES_DEFAULT_HOST: "192.168.178.103"
@@ -300,7 +379,7 @@
     - name: Ensure passbolt admin is present
       community.docker.docker_container_exec:
         container: passbolt
-        command: "su -m -c \"/usr/share/php/passbolt/bin/cake passbolt register_user -u {{ passbolt_email }} -f {{ passbolt_username }} -l {{ passbolt_surname }} -r admin\" -s /bin/sh www-data"
+        command: 'su -m -c "/usr/share/php/passbolt/bin/cake passbolt register_user -u {{ passbolt_email }} -f {{ passbolt_username }} -l {{ passbolt_surname }} -r admin" -s /bin/sh www-data'
       register: passbolt_result
       changed_when: "'Username: The username is already in use' not in passbolt_result.stdout"
       failed_when: false

@@ -1,5 +1,5 @@
 ---
-- name: Setup torrent client
+- name: Setup torrent server
   hosts: all
 
   vars_files:
@@ -53,26 +53,33 @@
         state: directory
         mode: "0775"
 
-    - name: Ensure qBitttorrent is installed
+- name: Install qBittorrent
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Ensure qBittorrent is installed
       ansible.builtin.package:
         name: qbittorrent-nox
         state: present
 
-    - name: Ensure qbittorrent config folder is present
+    - name: Ensure qBittorrent config folder is present
       ansible.builtin.file:
         path: "/home/{{ torrentuser_name }}/.config"
         state: directory
         owner: "{{ torrentuser_name }}"
         group: "{{ torrentuser_name }}"
 
-    - name: Ensure qbittorrent config folder is present
+    - name: Ensure qBittorrent config folder is present
       ansible.builtin.file:
         path: "/home/{{ torrentuser_name }}/.config/qBittorrent"
         state: directory
         owner: "{{ torrentuser_name }}"
         group: "{{ torrentuser_name }}"
 
-    - name: Ensure qbittorrent config file is on remote
+    - name: Ensure qBittorrent config file is on remote
       ansible.builtin.copy:
         src: ./qbittorrent.conf
         dest: "/home/{{ torrentuser_name }}/.config/qBittorrent/qBittorrent.conf"
@@ -81,10 +88,10 @@
         group: "{{ torrentuser_name }}"
 
     - name: Ensure torrent download path is set
-      ansible.builtin.command: "runuser -l {{ torrentuser_name }} -c 'qbittorrent-nox --save-path=/share/video-share'"
+      ansible.builtin.command: "runuser -l {{ torrentuser_name }} -c 'qbittorrent-nox --save-path={{ torrent_save_path }}'"
       changed_when: false
 
-    - name: Ensure qbittorrent service file is on remote (systemd)
+    - name: Ensure qBittorrent service file is on remote (systemd)
       ansible.builtin.copy:
         src: ./qbittorrent.service
         dest: /etc/systemd/system/qbittorrent.service
@@ -100,10 +107,24 @@
 
     - name: Clone qBittorrent theme git repo
       ansible.builtin.git:
-        repo: https://github.com/repslet/nightwalker.git
+        repo: "{{ qBittorrent_theme_git }}"
         dest: "/home/{{ torrentuser_name }}/nightwalker"
         force: yes
 
+    - name: Ensure qbittorrent service is enabled and reloaded
+      ansible.builtin.service:
+        name: qbittorrent
+        state: reloaded
+        enabled: true
+
+- name: Install and enable NordVPN connection
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  pre_tasks:
     - name: Ensure NordVPN auth file is present on remore
       ansible.builtin.copy:
         src: ./auth.txt
@@ -126,10 +147,4 @@
       ansible.builtin.service:
         name: openvpn
         state: started
-        enabled: true
-
-    - name: Ensure qbittorrent service is enabled and reloaded
-      ansible.builtin.service:
-        name: qbittorrent
-        state: reloaded
         enabled: true
