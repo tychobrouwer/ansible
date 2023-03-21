@@ -18,6 +18,8 @@ all:
           ansible_host: 192.168.178.105
         website:
           ansible_host: 192.168.178.106
+        media_manager:
+          ansible_host: 192.168.178.107
     entertainment:
       hosts:
         jellyfin:

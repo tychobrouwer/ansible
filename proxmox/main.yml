@@ -26,13 +26,29 @@
   tasks:
     - name: Ensure services are disabled
       ansible.builtin.service:
-        name:
-          - pve-ha-lrm
-          - pve-ha-crm
-          - pvesr.timer
-          - corosync.service
+        name: pve-ha-lrm
         state: stopped
         enabled: false
+
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: pve-ha-crm
+        state: stopped
+        enabled: false
+
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: pvesr.timer
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: corosync.service
+        state: stopped
+        enabled: false
+      failed_when: false
 
     - name: Ensure packages are installed
       ansible.builtin.apt:
@@ -106,6 +122,28 @@
         name: root
         groups: "{{ share_group }}"
         state: present
+
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /media
+        state: directory
+        mode: "0775"
+
+    - name: Ensure video share folder has correct permissions
+      ansible.builtin.file:
+        path: /mnt/data0/video-share
+        owner: "{{ shareuser_name }}"
+        group: "{{ share_group }}"
+        recurse: true
+        mode: "0775"
+
+    - name: Ensure file share folder has correct permissions
+      ansible.builtin.file:
+        path: /media/file-share
+        owner: "{{ shareuser_name }}"
+        group: "{{ share_group }}"
+        recurse: true
+        mode: "0775"
 
     - name: Get proxmox version
       ansible.builtin.command: uname -r

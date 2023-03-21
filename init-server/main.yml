@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: minecraft
+  hosts: media_manager
 
   vars_files:
     - vars.yml
@@ -10,7 +10,7 @@
     - name: Restart sshd
       ansible.builtin.service:
         name: sshd
-        state: reloaded
+        state: restarted
         enabled: true
 
   pre_tasks:

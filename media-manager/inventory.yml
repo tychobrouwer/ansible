@@ -1,7 +1,7 @@
 ---
 all:
   hosts:
-    wireguard:
-      ansible_host: 192.168.178.102
+    media_manager:
+      ansible_host: 192.168.178.60
   vars:
       ansible_user: root
