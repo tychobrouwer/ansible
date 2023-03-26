@@ -24,6 +24,7 @@
         - 121
       register: container_start_result
       changed_when: "'already running' not in container_start_result.stdout"
+      failed_when: false
 
     - name: Ensure containers have an addressed ip
       ansible.builtin.command: "pct exec {{ item }} dhclient"
