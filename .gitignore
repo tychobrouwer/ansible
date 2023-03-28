@@ -9,6 +9,5 @@ cert-cloudflare-origin.key
 auth.txt
 ops.json
 dashy-conf.yml
-prometheus-conf.yml
 wg0.conf
 traefik.yml

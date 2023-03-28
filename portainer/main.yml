@@ -154,8 +154,11 @@
           - --accessLog.format=json
           - --accesslog.fields.headers.defaultmode=keep
           - --accesslog.fields.headers.names.x-request-id=keep
-          - --metrics.prometheus=true
-          - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+          - --metrics.influxDB2.address=http://192.168.178.103:8086
+          - "--metrics.influxDB2.token={{ influxdb_secret }}"
+          - --metrics.influxDB2.org=homelab
+          - --metrics.influxDB2.bucket=traefik
+          - --metrics.influxDB2.pushInterval=10s
         ports:
           - "80:80"
           - "8080:8080"
@@ -240,43 +243,33 @@
           PROXIED: "true"
         restart_policy: unless-stopped
 
-- name: Install Prometheus pve exporter container
+- name: Install InfluxDB container
   hosts: all
 
   vars_files:
     - vars-private.yml
 
   tasks:
-    - name: Ensure Prometheus pve exporter Docker container is running
-      community.docker.docker_container:
-        name: prometheus-pve-exporter
-        image: prompve/prometheus-pve-exporter:latest
-        ports:
-          - "9221:9221"
-        volumes:
-          - /root/prometheus-pve-exporter-conf.yml:/etc/pve.yml
-        restart_policy: unless-stopped
-
-- name: Install Prometheus container
-  hosts: all
-
-  vars_files:
-    - vars-private.yml
-
-  tasks:
-    - name: Ensure Prometheus Docker volume is present
+    - name: Ensure InfluxDB Docker volume is present
       community.docker.docker_volume:
-        name: prometheus_data
+        name: influxdb_data
 
-    - name: Ensure Prometheus Docker container is running
+    - name: Ensure InfluxDB Docker container is running
       community.docker.docker_container:
-        name: prometheus
-        image: prom/prometheus:latest
+        name: influxdb
+        image: influxdb:latest
         ports:
-          - "9090:9090"
+          - "8086:8086"
+          - "8089:8089/udp"
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: setup
+          DOCKER_INFLUXDB_INIT_USERNAME: root
+          DOCKER_INFLUXDB_INIT_PASSWORD: "{{ influxdb_password }}"
+          DOCKER_INFLUXDB_INIT_ORG: homelab
+          DOCKER_INFLUXDB_INIT_BUCKET: proxmox
+          DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "{{ influxdb_secret }}"
         volumes:
-          - /root/prometheus-conf.yml:/etc/prometheus/prometheus.yml
-          - prometheus_data:/prometheus
+          - influxdb_data:/var/lib/influxdb
         restart_policy: unless-stopped
 
 - name: Install Grafana container

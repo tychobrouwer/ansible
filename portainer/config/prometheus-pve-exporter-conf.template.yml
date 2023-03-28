@@ -1,6 +1,0 @@
----
-default:
-    user: prometheus@pve
-    token_name: ---REDACTED---
-    token_value: ---REDACTED---
-    port: 443
