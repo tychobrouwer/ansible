@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: media_manager
+  hosts: backup_server
 
   vars_files:
     - vars.yml
@@ -82,3 +82,22 @@
         name: init.defaultBranch
         scope: system
         value: "main"
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.command: locale-gen en_GB.UTF-8
+      changed_when: false
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.debconf:
+        name: locales
+        question: locales/default_environment_locale
+        value: en_GB.UTF-8
+        vtype: select
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.command: localectl set-locale LANG=en_GB.UTF-8
+      changed_when: false
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.shell: ". /etc/default/locale"
+      changed_when: false

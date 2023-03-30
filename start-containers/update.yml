@@ -16,3 +16,4 @@
       ansible.builtin.package:
         name: "*"
         state: latest
+

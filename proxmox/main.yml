@@ -52,6 +52,57 @@
           - ifupdown2
         state: present
 
+- name: Enable email notifications
+  hosts: all
+
+  vars_files:
+    - vars-private.yml
+
+  handlers:
+    - name: Restart postfix
+      ansible.builtin.command: "postfix reload"
+
+  tasks:
+    - name: Ensure packages are installed
+      ansible.builtin.apt:
+        name:
+          - libsasl2-modules
+          - mailutils
+        state: present
+
+    - name: Ensure password file is present
+      ansible.builtin.copy:
+        dest: /etc/postfix/sasl_passwd
+        content: "smtp.gmail.com {{ email }}:{{ email_password }}"
+        mode: "0600"
+        notify: Restart postfix
+
+    - name: Ensure credientials database is present
+      ansible.builtin.command: postmap hash:/etc/postfix/sasl_passwd
+      changed_when: false
+
+    - name: Ensure relayhost is commented
+      ansible.builtin.lineinfile:
+        path: /etc/postfix/main.cf
+        firstmatch: true
+        regexp: '^relayhost =$'
+        line: '#relayhost ='
+      notify: Restart postfix
+
+    - name: Ensure smtp config is in postfix config
+      ansible.builtin.blockinfile:
+        path: /etc/postfix/main.cf
+        block: |
+          relayhost = smtp.gmail.com:587
+          smtp_use_tls = yes
+          smtp_sasl_auth_enable = yes
+          smtp_sasl_security_options =
+          smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+          smtp_tls_CAfile = /etc/ssl/certs/Entrust_Root_Certification_Authority.pem
+          smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_tls_session_cache
+          smtp_tls_session_cache_timeout = 3600s
+      notify: Restart postfix
+
 - name: Applying personalization to Proxmox
   hosts: all
 
@@ -85,6 +136,31 @@
       ansible.builtin.pip:
         name: icloudpd
         state: present
+
+- name: Create PBS users and folders
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Ensure pbs user group exists
+      ansible.builtin.group:
+        name: "{{ pbsuser_name }}"
+        gid: 3510
+        state: present
+
+    - name: Ensure pbs user exists
+      ansible.builtin.user:
+        name: "{{ pbsuser_name }}"
+        group: "{{ pbsuser_name }}"
+        uid: 1010
+        state: present
+
+    - name: Ensure pbs folder exists
+      ansible.builtin.file:
+        path: /mnt/data1/pbs-dumps
+        state: directory
 
 - name: Create share/ SMB users and folders
   hosts: all
@@ -141,6 +217,49 @@
         recurse: true
         mode: "0775"
 
+- name: Set Proxmox Backup Client file level backups
+  hosts: all
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  tasks:
+    - name: Ensure proxmox signing key is installed
+      ansible.builtin.apt_key:
+        url: "{{ proxmox_gpg_key }}"
+        state: present
+
+    - name: Ensure proxmox repository is in sources list
+      ansible.builtin.apt_repository:
+        repo: "{{ pbs_client_apt_repo }}"
+        state: present
+
+    - name: Install Proxmox Backup Client
+      ansible.builtin.package:
+        name:
+          - proxmox-backup-client
+        state: present
+
+    - name: Ensure backup is in share group
+      ansible.builtin.user:
+        name: backup
+        groups: "{{ share_group }}"
+        state: present
+
+    - name: Copy file backup script is on remote
+      ansible.builtin.copy:
+        src: ./pbs-file-backup.sh
+        dest: /root/pbs-file-backup.sh
+        mode: "0755"
+
+    - name: Ensure file backup cron is present
+      ansible.builtin.cron:
+        name: "run file folder backup"
+        minute: "0"
+        hour: "18,5"
+        job: "/root/pbs-file-backup.sh"
+
 - name: Install NVIDIA drivers
   hosts: all
 
@@ -193,54 +312,3 @@
       ansible.builtin.command: update-initramfs -u
       changed_when: false
       when: "'command not found' in nvidia_result.stdout"
-
-- name: Enable email notifications
-  hosts: all
-
-  vars_files:
-    - vars-private.yml
-
-  handlers:
-    name: Restart postfix
-    ansible.builtin.command: "postfix reload"
-
-  tasks:
-    - name: Ensure packages are installed
-      ansible.builtin.apt:
-        name:
-          - libsasl2-modules
-          - mailutils
-        state: present
-
-    - name: Ensure password file is present
-      ansible.builtin.copy:
-        dest: /etc/postfix/sasl_passwd
-        content: "smtp.gmail.com {{ email }}:{{ email_password }}"
-        mode: "0600"
-        notify: Restart postfix
-
-    - name: Ensure credientials database is present
-      ansible.builtin.command: postmap hash:/etc/postfix/sasl_passwd
-      changed_when: false
-
-    - name: Ensure relayhost is commented
-      ansible.builtin.lineinfile:
-        path: /etc/postfix/main.cf
-        firstmatch: true
-        regexp: '^relayhost ='
-        line: '#relayhost ='
-        notify: Restart postfix
-
-    - name: Ensure smtp config is in postfix config
-      ansible.builtin.blockinfile:
-        path: /etc/postfix/main.cf
-        block: |
-          relayhost = smtp.gmail.com:587
-          smtp_use_tls = yes
-          smtp_sasl_auth_enable = yes
-          smtp_sasl_security_options =
-          smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
-          smtp_tls_CAfile = /etc/ssl/certs/Entrust_Root_Certification_Authority.pem
-          smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_tls_session_cache
-          smtp_tls_session_cache_timeout = 3600s
-        notify: Restart postfix

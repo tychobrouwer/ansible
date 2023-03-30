@@ -4,6 +4,7 @@ qbittorrent.conf
 prometheus-pve-exporter-conf.yml
 grafana.ini
 cert-proxmox.crt
+cert-proxmox-backup.crt
 cert-cloudflare-origin.pem
 cert-cloudflare-origin.key
 auth.txt
@@ -11,3 +12,4 @@ ops.json
 dashy-conf.yml
 wg0.conf
 traefik.yml
+pbs-file-backup.sh
