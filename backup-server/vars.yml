@@ -2,3 +2,4 @@
 pbsuser_name: pbsuser
 proxmox_gpg_key: http://download.proxmox.com/debian/proxmox-release-bullseye.gpg
 pbs_apt_repo: deb http://download.proxmox.com/debian/pbs bullseye pbs-no-subscription
+pbs_gpg_key: http://download.proxmox.com/debian/proxmox-release-bullseye.gpg
