@@ -13,3 +13,4 @@ dashy-conf.yml
 wg0.conf
 traefik.yml
 pbs-file-backup.sh
+*.pem
