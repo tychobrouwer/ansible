@@ -3,11 +3,6 @@
   hosts: proxmox
 
   tasks:
-    - name: Ensure proxmoxer python package is installed
-      ansible.builtin.pip:
-        name: proxmoxer
-        state: present
-
     - name: Ensure containers are started
       ansible.builtin.command: "pct start {{ item }}"
       loop:

@@ -183,6 +183,6 @@
         mode: "0755"
 
     - name: Run NVIDIA installer
-      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq"
+      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq --no-kernel-module"
       register: nvidia_installer
       changed_when: "'appears to already be loaded' not in nvidia_installer.stdout"
