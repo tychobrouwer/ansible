@@ -31,14 +31,14 @@
 
     - name: Ensure services are disabled
       ansible.builtin.service:
-        name: pvesr.timer
+        name: pvescheduler
         state: stopped
         enabled: false
       failed_when: false
 
     - name: Ensure services are disabled
       ansible.builtin.service:
-        name: corosync.service
+        name: corosync
         state: stopped
         enabled: false
       failed_when: false
