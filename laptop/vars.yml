@@ -1,0 +1,87 @@
+---
+config_dir: config
+other_dir: other
+
+user: tychob
+installer_dir: .install-scripts
+devtools_dir: .devtools
+projects_dir: Projects
+school_dir: School
+
+dnf_install_packages:
+  - zsh
+  - git
+  - gnome-boxes
+  - wireguard-tools
+  - dconf-editor
+  - tlp
+  - smartmontools
+  - powertop
+  - nvtop
+  - htop
+  - bpytop
+
+dnf_uninstall_packages:
+  - totem
+  - cheese
+  - inkscape
+  - rhythmbox
+  - eog
+  - gnome-characters
+  - gnome-connections
+  - gnome-calendar
+  - gnome-clocks
+  - gnome-contacts
+  - gnome-maps
+  - gnome-weather
+  - onlyoffice-desktopeditors
+  - power-profiles-daemon
+
+flatpak_install_packages:
+  - com.github.eneshecan.WhatsAppForLinux
+  - com.github.IsmaelMartinez.teams_for_linux
+  - com.visualstudio.code
+  - cc.arduino.IDE2
+  - org.gimp.GIMP
+  - com.getmailspring.Mailspring
+  - com.github.iwalton3.jellyfin-media-player
+
+vivaldi_repo: https://repo.vivaldi.com/archive/rpm/x86_64/
+vivaldi_package: vivaldi-stable
+
+matlab_zip: matlab_R2023a_glnxa64.zip
+nordvpn_installer: install_nordvpn.sh
+ohmyzsh_installer: install_oh-my-zsh.sh
+enable_ir_emitter_installer: https://github.com/EmixamPP/linux-enable-ir-emitter/releases/download/4.5.0/linux-enable-ir-emitter-4.5.0.tar.gz
+
+git_repos:
+  - name: ac-controller-api-socket-python
+    repo: https://github.com/TychoBrouwer/ac-controller-api-socket-python
+  - name: code-learning
+    repo: https://github.com/TychoBrouwer/code-learning
+  - name: food-app-react-native
+    repo: https://github.com/TychoBrouwer/food-app-react-native
+  - name: food-app-rest-api-express-sqlite
+    repo: https://github.com/TychoBrouwer/food-app-rest-api-express-sqlite
+  - name: github-profile
+    repo: https://github.com/TychoBrouwer/TychoBrouwer
+  - name: mail-app-flutter
+    repo: https://github.com/TychoBrouwer/mail-app-flutter
+  - name: personal-website-elm
+    repo: https://github.com/TychoBrouwer/personal-website-elm
+  - name: pokemon-game-electron
+    repo: https://github.com/TychoBrouwer/pokemon-game-electron
+  - name: snake-game-electron
+    repo: https://github.com/TychoBrouwer/snake-game-electron
+
+custom_icons:
+  - name: folder-music.svg
+    replacement: folder-documents.svg
+  - name: folder-videos.svg
+    replacement: folder-documents.svg
+
+custom_symbolic_icons:
+  - name: folder-music-symbolic.svg
+    replacement: folder-documents-symbolic.svg
+  - name: folder-videos-symbolic.svg
+    replacement: folder-documents-symbolic.svg

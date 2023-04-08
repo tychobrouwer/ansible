@@ -1,0 +1,442 @@
+---
+- name: Laptop setup
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+      become: true
+
+  tasks:
+    - name: Create installer folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create dev folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ devtools_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create Projects folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ projects_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Ensure SSH password authentication is disabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: "sshd -t -f %s"
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+      become: true
+
+- name: Install packages
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install packages
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ dnf_install_packages }}"
+      become: true
+
+    - name: Remove packages
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ dnf_uninstall_packages }}"
+      become: true
+
+    - name: Install Flatpak packages
+      community.general.flatpak:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ flatpak_install_packages }}"
+      become: true
+
+
+- name: Install vivaldi
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install vivaldi repo
+      ansible.builtin.yum_repository:
+        name: vivaldi
+        description: vivaldi YUM repo
+        baseurl: "{{ vivaldi_repo }}"
+        gpgcheck: no
+      become: true
+
+    - name: Install vivaldi
+      ansible.builtin.package:
+        name: "{{ vivaldi_package }}"
+        state: present
+      become: true
+
+- name: Setup Zsh
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Ensure zsh config is present
+      ansible.builtin.copy:
+        src: "./{{ config_dir }}/.zshrc"
+        dest: "/home/{{ user }}/"
+        mode: "0644"
+
+    - name: Ensure bash config is present
+      ansible.builtin.copy:
+        src: "./{{ config_dir }}/.bashrc"
+        dest: "/home/{{ user }}/"
+        mode: "0644"
+
+    - name: Get oh-my-zsh installer
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: "/home/{{ user }}/{{ installer_dir }}/{{ ohmyzsh_installer }}"
+        mode: "0755"
+
+    - name: Run oh-my-zsh installer
+      ansible.builtin.shell: "/home/{{ user }}/{{ installer_dir }}/{{ ohmyzsh_installer }}"
+      args:
+        creates: "/home/{{ user }}/.oh-my-zsh/oh-my-zsh.sh"
+
+    - name: Clone powerlevel10k zsh theme
+      ansible.builtin.git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: "/home/{{ user }}/.oh-my-zsh/custom/themes/powerlevel10k"
+        depth: 1
+
+
+- name: Setup Git config
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars-private.yml
+
+  tasks:
+    - name: Ensure git system name is set
+      community.general.git_config:
+        name: user.name
+        scope: system
+        value: "{{ github_name }}"
+      become: true
+
+    - name: Ensure git system email is set
+      community.general.git_config:
+        name: user.email
+        scope: system
+        value: "{{ github_email }}"
+      become: true
+
+    - name: Ensure git system default branch is set
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: system
+        value: "main"
+      become: true
+
+
+- name: Install MATLAB
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Create matlab folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}/matlab"
+        state: directory
+        mode: "0755"
+
+    - name: Get matlab zip
+      ansible.builtin.unarchive:
+        src: "./{{ other_dir }}/{{ matlab_zip }}"
+        dest: "/home/{{ user }}/{{ installer_dir }}/matlab"
+
+
+- name: Install NordVPN client
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Get NordVPN installer
+      ansible.builtin.copy:
+        src: "./{{ other_dir }}/{{ nordvpn_installer }}"
+        dest: "/home/{{ user }}/{{ installer_dir }}"
+        mode: "0755"
+
+    - name: Run NordVPN installer
+      ansible.builtin.shell: "/home/{{ user }}/{{ installer_dir }}/{{ nordvpn_installer }}"
+      args:
+        creates: "/usr/bin/nordvpn"
+
+
+- name: Install howdy
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install howdy repository
+      community.general.copr:
+        name: principis/howdy
+        chroot: fedora-37-x86_64
+      become: true
+
+    - name: Install howdy package
+      ansible.builtin.package:
+        name: howdy
+        state: present
+      become: true
+
+    - name: Create ir_emitter folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}/ir_emitter"
+        state: directory
+        mode: "0755"
+
+    - name: Get linux-enable-ir-emitter zip
+      ansible.builtin.unarchive:
+        src: "{{ enable_ir_emitter_installer }}"
+        dest: /
+        remote_src: yes
+      become: true
+
+    - name: Ensure sudo uses howdy
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/sudo
+        regexp: '^auth       sufficient   pam_python.so'
+        insertafter: "^#%PAM-1.0"
+        line: auth       sufficient   pam_python.so /lib64/security/howdy/pam.py
+      become: true
+
+    - name: Ensure gdm uses howdy
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/gdm-password
+        regexp: '^auth        sufficient    pam_python.so'
+        insertafter: "^{{ 'auth     [success=done ignore=ignore default=bad] pam_selinux_permit.so' | regex_escape() }}"
+        line: auth        sufficient    pam_python.so /lib64/security/howdy/pam.py
+      become: true
+
+    - name: Set Howdy config
+      ansible.builtin.copy:
+        src: "./{{ config_dir }}/howdy-config.ini"
+        dest: /usr/lib64/security/howdy/config.ini
+        mode: "0644"
+
+
+- name: Configure wireguard
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Create Wireguard genkey
+      ansible.builtin.shell:  genkey | tee /etc/wireguard/private.key
+      args:
+        creates: /etc/wireguard/private.key
+      become: true
+
+    - name: Set file ownership of key
+      ansible.builtin.file:
+        path: /etc/wireguard/private.key
+        mode: '0600'
+      become: true
+
+    - name: Create Wireguard genkey
+      ansible.builtin.shell:  cat /etc/wireguard/private.key | wg pubkey | tee /etc/wireguard/public.key
+      args:
+        creates: /etc/wireguard/public.key
+      become: true
+
+    - name: Set Wireguard config
+      ansible.builtin.copy:
+        src: "./{{ config_dir }}/wg0.conf"
+        dest: /etc/wireguard/wg0.conf
+        mode: "0600"
+      become: true
+
+    - name: Enable Wireguard service wg0
+      ansible.builtin.service:
+        name: wg-quick@wg0
+        enabled: yes
+      become: true
+
+    - name: Set file ownership of resolvconf
+      ansible.builtin.file:
+        path: /usr/sbin/resolvconf.openresolv
+        mode: '0755'
+      become: true
+
+
+- name: Create and clone projects
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Example clone of a single branch
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "/home/{{ user }}/{{ projects_dir }}/{{ item.name }}"
+      loop: "{{ git_repos }}"
+
+
+- name: Configure custom user directories
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  handlers:
+    - name: user_dirs_update
+      ansible.builtin.command: xdg-user-dirs-update
+
+  tasks:
+    - name: Set custom user-dirs
+      ansible.builtin.copy:
+        src: "./{{ config_dir }}/user-dirs.dirs"
+        dest: "/home/{{ user }}/.config/user-dirs.dirs"
+        mode: "0400"
+      notify: user_dirs_update
+
+    - name: Get set custom icons script
+      ansible.builtin.copy:
+        src: "./{{ other_dir }}/set_icons.sh"
+        dest: "/home/{{ user }}/{{ installer_dir }}/"
+        mode: "0755"
+
+    - name: Set custom icons
+      ansible.builtin.command: "/home/{{ user }}/{{ installer_dir }}/set_icons.sh {{ item.replacement }} {{ item.name }}"
+      register: icon_status
+      changed_when: "'updated' in icon_status.stdout"
+      loop: "{{ custom_icons }}"
+      become: true
+
+    - name: Get set custom symbolic icons script
+      ansible.builtin.copy:
+        src: "./{{ other_dir }}/set_symbolic_icons.sh"
+        dest: "/home/{{ user }}/{{ installer_dir }}/"
+        mode: "0755"
+
+    - name: Set custom symbolic icons
+      ansible.builtin.command: "/home/{{ user }}/{{ installer_dir }}/set_symbolic_icons.sh {{ item.replacement }} {{ item.name }}"
+      register: symbolic_icon_status
+      changed_when: "'updated' in symbolic_icon_status.stdout"
+      loop: "{{ custom_symbolic_icons }}"
+      become: true
+
+- name: Set fstab configuration
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+    - vars-private.yml
+
+  handlers:
+    - name: mount_a
+      ansible.builtin.command: mount -a
+
+  tasks:
+    - name: Set file permissions of mount.cifs
+      ansible.builtin.file:
+        path: /usr/sbin/mount.cifs
+        mode: '4755'
+      become: true
+
+    - name: Create file_share mount folder
+      ansible.builtin.file:
+        path: /mnt/file_share
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "0755"
+      become: true
+
+    - name: Create video_share mount folder
+      ansible.builtin.file:
+        path: /mnt/video_share
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "0755"
+      become: true
+
+    - name: Set fstab
+      ansible.builtin.blockinfile:
+        path: /etc/fstab
+        block: |
+          //192.168.178.104/file_share/School /home/{{ user }}/School cifs username={{ samba_user }},password={{ samba_password }},_netdev,uid={{ user }},gid={{ user }} 0 0
+          //192.168.178.104/file_share /mnt/file_share cifs username={{ samba_user }},password={{ samba_password }},_netdev,uid={{ user }},gid={{ user }} 0 0
+          //192.168.178.104/video_share /mnt/video_share cifs username={{ samba_user }},password={{ samba_password }},_netdev,uid={{ user }},gid={{ user }} 0 0
+      notify: mount_a
+      become: true
+
+- name: Install and set TLP power saving
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Enable TLP service
+      ansible.builtin.service:
+        name: tlp
+        enabled: yes
+        masked: no
+      become: true
+
+    - name: Mask rfkill service
+      ansible.builtin.systemd:
+        name: systemd-rfkill.service
+        masked: yes
+      become: true
+
+    - name: Mask rfkill socket
+      ansible.builtin.systemd:
+        name: systemd-rfkill.socket
+        masked: yes
+      become: true
+

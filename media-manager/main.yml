@@ -72,6 +72,40 @@
         state: directory
         mode: "0775"
 
+- name: Install and enable NordVPN connection
+  hosts: all
+
+  tasks:
+    - name: Ensure openvpn is installed
+      ansible.builtin.package:
+        name:
+          - openvpn
+        state: present
+
+    - name: Ensure NordVPN auth file is present on remore
+      ansible.builtin.copy:
+        src: ./auth.txt
+        dest: /etc/openvpn/auth.txt
+        mode: "0644"
+
+    - name: Ensure NordVPN connection file is present on remore
+      ansible.builtin.copy:
+        src: ./nl986.conf
+        dest: /etc/openvpn/nl986.conf
+        mode: "0644"
+
+    - name: Ensure openvpn config is present on remore
+      ansible.builtin.copy:
+        src: ./openvpn
+        dest: /etc/default/openvpn
+        mode: "0644"
+
+    - name: Ensure openvpn service is enabled and started
+      ansible.builtin.service:
+        name: openvpn
+        state: started
+        enabled: true
+
 - name: Install Radarr
   hosts: all
 

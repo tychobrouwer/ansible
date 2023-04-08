@@ -18,13 +18,6 @@
         name: "*"
         state: latest
 
-    - name: Ensure openvpn is installed
-      ansible.builtin.package:
-        name:
-          # - unzip
-          - openvpn
-        state: present
-
   tasks:
     - name: Ensure share group exists
       ansible.builtin.group:
@@ -53,13 +46,47 @@
         state: directory
         mode: "0775"
 
+- name: Install and enable NordVPN connection
+  hosts: all
+
+  tasks:
+    - name: Ensure openvpn is installed
+      ansible.builtin.package:
+        name:
+          - openvpn
+        state: present
+
+    - name: Ensure NordVPN auth file is present on remore
+      ansible.builtin.copy:
+        src: ./auth.txt
+        dest: /etc/openvpn/auth.txt
+        mode: "0644"
+
+    - name: Ensure NordVPN connection file is present on remore
+      ansible.builtin.copy:
+        src: ./nl986.conf
+        dest: /etc/openvpn/nl986.conf
+        mode: "0644"
+
+    - name: Ensure openvpn config is present on remore
+      ansible.builtin.copy:
+        src: ./openvpn
+        dest: /etc/default/openvpn
+        mode: "0644"
+
+    - name: Ensure openvpn service is enabled and started
+      ansible.builtin.service:
+        name: openvpn
+        state: started
+        enabled: true
+
 - name: Install qBittorrent
   hosts: all
 
   vars_files:
     - vars.yml
 
-  pre_tasks:
+  tasks:
     - name: Ensure qBittorrent is installed
       ansible.builtin.package:
         name: qbittorrent-nox
@@ -115,36 +142,4 @@
       ansible.builtin.service:
         name: qbittorrent
         state: reloaded
-        enabled: true
-
-- name: Install and enable NordVPN connection
-  hosts: all
-
-  vars_files:
-    - vars.yml
-    - vars-private.yml
-
-  pre_tasks:
-    - name: Ensure NordVPN auth file is present on remore
-      ansible.builtin.copy:
-        src: ./auth.txt
-        dest: /etc/openvpn/auth.txt
-        mode: "0644"
-
-    - name: Ensure NordVPN connection file is present on remore
-      ansible.builtin.copy:
-        src: ./nl986.conf
-        dest: /etc/openvpn/nl986.conf
-        mode: "0644"
-
-    - name: Ensure openvpn config is present on remore
-      ansible.builtin.copy:
-        src: ./openvpn
-        dest: /etc/default/openvpn
-        mode: "0644"
-
-    - name: Ensure openvpn service is enabled and started
-      ansible.builtin.service:
-        name: openvpn
-        state: started
         enabled: true

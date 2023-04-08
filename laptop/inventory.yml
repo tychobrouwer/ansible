@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    laptop:
+      ansible_host: 192.168.178.79
+  vars:
+    ansible_user: tychob
