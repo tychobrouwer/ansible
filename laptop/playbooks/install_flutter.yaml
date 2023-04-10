@@ -1,0 +1,16 @@
+---
+- name: Install FlutterSDK
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Get FlutterSDK
+      ansible.builtin.git:
+        repo: "{{ flutter_repo }}"
+        dest: "/home/{{ user }}/{{ devtools_dir }}/flutter"
+        depth: 1
+        single_branch: yes
+        version: stable

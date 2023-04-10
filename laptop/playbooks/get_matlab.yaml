@@ -1,0 +1,20 @@
+---
+- name: Install MATLAB
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Create matlab folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}/matlab"
+        state: directory
+        mode: "0755"
+
+    - name: Get matlab zip
+      ansible.builtin.unarchive:
+        src: "../other/{{ matlab_zip }}"
+        dest: "/home/{{ user }}/{{ installer_dir }}/matlab"
+

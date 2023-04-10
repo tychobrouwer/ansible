@@ -1,0 +1,29 @@
+---
+- name: Setup Git config
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars-private.yaml
+
+  tasks:
+    - name: Ensure git system name is set
+      community.general.git_config:
+        name: user.name
+        scope: system
+        value: "{{ github_name }}"
+      become: true
+
+    - name: Ensure git system email is set
+      community.general.git_config:
+        name: user.email
+        scope: system
+        value: "{{ github_email }}"
+      become: true
+
+    - name: Ensure git system default branch is set
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: system
+        value: "main"
+      become: true

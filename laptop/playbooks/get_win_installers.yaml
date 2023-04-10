@@ -1,0 +1,18 @@
+---
+- name: Get installers for Winetricks
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Get Wargaming Game Center installer
+      ansible.builtin.get_url:
+        url: "{{ wargaming_installer }}"
+        dest: "/home/{{ user }}/{{ installer_dir }}/wargaming"
+
+    - name: Get Ubisoft Connect installer
+      ansible.builtin.get_url:
+        url: "{{ ubisoft_installer }}"
+        dest: "/home/{{ user }}/{{ installer_dir }}/ubisoft"

@@ -1,0 +1,25 @@
+---
+- name: Setup user folders
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Create installer folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create dev folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ devtools_dir }}"
+        state: directory
+
+    - name: Create Projects folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ projects_dir }}"
+        state: directory
+        mode: "0755"

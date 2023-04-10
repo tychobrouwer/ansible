@@ -1,4 +1,5 @@
 vars-private.yml
+vars-private.yaml
 authorized_keys
 qbittorrent.conf
 prometheus-pve-exporter-conf.yml

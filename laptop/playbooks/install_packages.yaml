@@ -1,0 +1,33 @@
+---
+- name: Install packages
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  pre_tasks:
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+      become: true
+
+  tasks:
+    - name: Install packages
+      ansible.builtin.package:
+        name: "{{ dnf_install_packages }}"
+        state: present
+      become: true
+
+    - name: Remove packages
+      ansible.builtin.package:
+        name: "{{ dnf_uninstall_packages }}"
+        state: absent
+      become: true
+
+    - name: Install Flatpak packages
+      community.general.flatpak:
+        name: "{{ flatpak_install_packages }}"
+        state: present
+      become: true

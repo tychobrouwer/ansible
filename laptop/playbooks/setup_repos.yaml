@@ -1,0 +1,14 @@
+---
+- name: Create and clone projects
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Example clone of a single branch
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "/home/{{ user }}/{{ projects_dir }}/{{ item.name }}"
+      loop: "{{ git_repos }}"

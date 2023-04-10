@@ -1,0 +1,37 @@
+---
+- name: Setup Zsh
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Ensure zsh config is present
+      ansible.builtin.copy:
+        src: "../config/.zshrc"
+        dest: "/home/{{ user }}/"
+        mode: "0644"
+
+    - name: Ensure bash config is present
+      ansible.builtin.copy:
+        src: "../config/.bashrc"
+        dest: "/home/{{ user }}/"
+        mode: "0644"
+
+    - name: Get oh-my-zsh installer
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: "/home/{{ user }}/{{ installer_dir }}/install_oh-my-zsh.sh"
+        mode: "0755"
+
+    - name: Run oh-my-zsh installer
+      ansible.builtin.shell: "/home/{{ user }}/{{ installer_dir }}/install_oh-my-zsh.sh"
+      args:
+        creates: "/home/{{ user }}/.oh-my-zsh/oh-my-zsh.sh"
+
+    - name: Clone powerlevel10k zsh theme
+      ansible.builtin.git:
+        repo: "{{ pl10k_repo }}"
+        dest: "/home/{{ user }}/.oh-my-zsh/custom/themes/powerlevel10k"
+        depth: 1

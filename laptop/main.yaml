@@ -1,0 +1,61 @@
+---
+- name: Laptop setup
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - vars/vars.yaml
+
+  tasks:
+    - name: Ensure SSH password authentication is disabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication"
+        line: "PasswordAuthentication no"
+        state: present
+        validate: "sshd -t -f %s"
+      become: true
+
+    - name: Ensure dnf max_parallel_downloads is set
+      ansible.builtin.lineinfile:
+        path: /etc/dnf/dnf.conf
+        regexp: "^max_parallel_downloads"
+        line: max_parallel_downloads=10
+        state: present
+      become: true
+
+
+# - import_playbook: playbooks/setup_folders.yaml
+
+
+# - import_playbook: playbooks/install_packages.yaml
+
+# - import_playbook: playbooks/install_elm.yaml
+
+# - import_playbook: playbooks/install_flutter.yaml
+
+# - import_playbook: playbooks/install_howdy.yaml
+
+# - import_playbook: playbooks/install_nordvpn.yaml
+
+# - import_playbook: playbooks/install_tlp.yaml
+
+# - import_playbook: playbooks/install_vivaldi.yaml
+
+
+# - import_playbook: playbooks/setup_git.yaml
+
+# - import_playbook: playbooks/setup_mounts.yaml
+
+# - import_playbook: playbooks/setup_repos.yaml
+
+# - import_playbook: playbooks/setup_wireguard.yaml
+
+# - import_playbook: playbooks/setup_xdg_dirs.yaml
+
+# - import_playbook: playbooks/setup_zsh.yaml
+
+
+# - import_playbook: playbooks/get_matlab.yaml
+
+# - import_playbook: playbooks/get_win_installers.yaml

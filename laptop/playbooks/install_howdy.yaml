@@ -1,0 +1,55 @@
+---
+- name: Install howdy
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Install howdy repository
+      community.general.copr:
+        name: principis/howdy
+        chroot: fedora-37-x86_64
+      become: true
+
+    - name: Install howdy package
+      ansible.builtin.package:
+        name: howdy
+        state: present
+      become: true
+
+    - name: Create ir_emitter folder
+      ansible.builtin.file:
+        path: "/home/{{ user }}/{{ installer_dir }}/ir_emitter"
+        state: directory
+        mode: "0755"
+
+    - name: Get linux-enable-ir-emitter zip
+      ansible.builtin.unarchive:
+        src: "{{ enable_ir_emitter_installer }}"
+        dest: /
+        remote_src: yes
+      become: true
+
+    - name: Ensure sudo uses howdy
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/sudo
+        regexp: '^auth       sufficient   pam_python.so'
+        insertafter: "^#%PAM-1.0"
+        line: auth       sufficient   pam_python.so /lib64/security/howdy/pam.py
+      become: true
+
+    - name: Ensure gdm uses howdy
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/gdm-password
+        regexp: '^auth        sufficient    pam_python.so'
+        insertafter: "^{{ 'auth     [success=done ignore=ignore default=bad] pam_selinux_permit.so' | regex_escape() }}"
+        line: auth        sufficient    pam_python.so /lib64/security/howdy/pam.py
+      become: true
+
+    - name: Set Howdy config
+      ansible.builtin.copy:
+        src: "../config/howdy-config.ini"
+        dest: /usr/lib64/security/howdy/config.ini
+        mode: "0644"

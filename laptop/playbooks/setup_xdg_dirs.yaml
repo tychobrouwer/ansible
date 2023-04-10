@@ -1,0 +1,46 @@
+---
+- name: Configure custom user directories
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  handlers:
+    - name: user_dirs_update
+      ansible.builtin.command: xdg-user-dirs-update
+
+  tasks:
+    - name: Set custom user-dirs
+      ansible.builtin.copy:
+        src: "../config/user-dirs.dirs"
+        dest: "/home/{{ user }}/.config/user-dirs.dirs"
+        mode: "0400"
+      notify: user_dirs_update
+      failed_when: false
+
+    - name: Get set custom icons script
+      ansible.builtin.copy:
+        src: "../other/set_icons.sh"
+        dest: "/home/{{ user }}/{{ installer_dir }}/"
+        mode: "0755"
+
+    - name: Set custom icons
+      ansible.builtin.command: "/home/{{ user }}/{{ installer_dir }}/set_icons.sh {{ item.replacement }} {{ item.name }}"
+      register: icon_status
+      changed_when: "'updated' in icon_status.stdout"
+      loop: "{{ custom_icons }}"
+      become: true
+
+    - name: Get set custom symbolic icons script
+      ansible.builtin.copy:
+        src: "../other/set_symbolic_icons.sh"
+        dest: "/home/{{ user }}/{{ installer_dir }}/"
+        mode: "0755"
+
+    - name: Set custom symbolic icons
+      ansible.builtin.command: "/home/{{ user }}/{{ installer_dir }}/set_symbolic_icons.sh {{ item.replacement }} {{ item.name }}"
+      register: symbolic_icon_status
+      changed_when: "'updated' in symbolic_icon_status.stdout"
+      loop: "{{ custom_symbolic_icons }}"
+      become: true

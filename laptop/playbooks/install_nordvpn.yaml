@@ -1,0 +1,19 @@
+---
+- name: Install NordVPN client
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Get NordVPN installer
+      ansible.builtin.copy:
+        src: "../other/install_nordvpn.sh"
+        dest: "/home/{{ user }}/{{ installer_dir }}"
+        mode: "0755"
+
+    - name: Run NordVPN installer
+      ansible.builtin.shell: "/home/{{ user }}/{{ installer_dir }}/install_nordvpn.sh"
+      args:
+        creates: "/usr/bin/nordvpn"

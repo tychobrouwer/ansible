@@ -1,0 +1,25 @@
+---
+- name: "Ensure {{ item.name }} mount folder is present"
+  ansible.builtin.file:
+    path: "{{ item.where }}"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0755"
+  become: true
+
+- name: "Ensure {{ item.name }} mount is present"
+  ansible.builtin.template:
+    src: "../templates/mount.j2"
+    dest: "/etc/systemd/system/{{ item.name }}.mount"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: "Enable and start {{ item.name }} mount"
+  ansible.builtin.service:
+    name: "{{ item.name }}.mount"
+    enabled: yes
+    state: started
+  become: true

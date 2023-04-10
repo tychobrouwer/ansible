@@ -13,6 +13,7 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 # End of lines configured by oh-my-zsh
 
+
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=1000
@@ -24,11 +25,13 @@ unsetopt beep
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
+
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/tychob/.zshrc'
 
 autoload -Uz compinit
 # End of lines added by compinstall
+
 
 bindkey "^[[3~" delete-char
 bindkey "^[[1;5D" emacs-backward-word
@@ -36,5 +39,10 @@ bindkey "^[[1;2D" emacs-backward-word
 bindkey "^[[1;5C" emacs-forward-word
 bindkey "^[[1;2C" emacs-forward-word
 
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+
+export PATH=/home/tychob/.devtools/flutter/bin:$PATH
+export CHROME_EXECUTABLE='/var/lib/flatpak/exports/bin/com.google.Chrome'

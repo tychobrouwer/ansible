@@ -1,0 +1,22 @@
+---
+- name: Install vivaldi
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Install vivaldi repo
+      ansible.builtin.yum_repository:
+        name: vivaldi
+        description: vivaldi YUM repo
+        baseurl: "{{ vivaldi_repo }}"
+        gpgcheck: no
+      become: true
+
+    - name: Install vivaldi
+      ansible.builtin.package:
+        name: "{{ vivaldi_package }}"
+        state: present
+      become: true

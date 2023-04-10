@@ -2,6 +2,6 @@
 all:
   hosts:
     media_manager:
-      ansible_host: 192.168.178.60
+      ansible_host: 192.168.178.107
   vars:
       ansible_user: root

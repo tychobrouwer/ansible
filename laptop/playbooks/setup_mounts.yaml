@@ -1,0 +1,26 @@
+---
+- name: Set mounts configuration
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+    - ../vars/vars-private.yaml
+
+  tasks:
+    - name: Set file permissions of mount.cifs
+      ansible.builtin.file:
+        path: /usr/sbin/mount.cifs
+        mode: '4755'
+      become: true
+
+    - name: Ensure cifspasswd is present
+      ansible.builtin.template:
+        src: "../templates/cifspasswd.j2"
+        dest: /etc/cifspasswd
+        mode: "0644"
+      become: true
+
+    - name: Setup mounts
+      include_tasks: setup_mount.yaml
+      loop: "{{ cifs_mounts }}"

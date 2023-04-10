@@ -1,0 +1,31 @@
+---
+- name: Install Elm
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Get Elm
+      ansible.builtin.get_url:
+        url: "{{ elm_binary_zip }}"
+        dest: "/home/{{ user }}/{{ devtools_dir }}/elm.gz"
+
+    - name: Unzip elm executable
+      ansible.builtin.command:
+        cmd: gunzip "/home/{{ user }}/{{ devtools_dir }}/elm.gz"
+        creates: "/home/{{ user }}/{{ devtools_dir }}/elm"
+
+    - name: Move elm to bin
+      ansible.builtin.command:
+        cmd: mv "/home/{{ user }}/{{ devtools_dir }}/elm" /usr/local/bin/elm
+        removes: "/home/{{ user }}/{{ devtools_dir }}/elm"
+        creates: /usr/local/bin/elm
+      become: true
+
+    - name: Set file permissions of elm
+      ansible.builtin.file:
+        path: /usr/local/bin/elm
+        mode: '0755'
+      become: true
