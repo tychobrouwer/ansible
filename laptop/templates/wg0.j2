@@ -1,0 +1,10 @@
+[Interface]
+PrivateKey = {{ wireguard_private_key }}
+Address = 10.6.0.3/32
+DNS = {{ wireguard_dns }}
+
+[Peer]
+PublicKey = {{ wireguard_public_key }}
+AllowedIPs = 10.6.0.0/24, 192.168.178.0/24
+Endpoint = {{ wireguard_endpoint }}
+PersistentKeepalive = 21

@@ -1,0 +1,15 @@
+---
+- name: Set dconf settings
+  hosts: all
+  gather_facts: no
+
+  vars_files:
+    - ../vars/vars.yaml
+
+  tasks:
+    - name: Set default visible columns nautilus
+      community.general.dconf:
+        key: "{{ item.key }}"
+        value: "{{ item.value }}"
+      loop: "{{ dconf_settings }}"
+      become: true

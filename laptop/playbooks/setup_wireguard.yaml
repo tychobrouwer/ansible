@@ -25,9 +25,9 @@
         creates: /etc/wireguard/public.key
       become: true
 
-    - name: Set Wireguard config
-      ansible.builtin.copy:
-        src: "../config/wg0.conf"
+    - name: Ensure Wireguard config is present
+      ansible.builtin.template:
+        src: ../templates/wg0.j2
         dest: /etc/wireguard/wg0.conf
         mode: "0600"
       become: true

@@ -4,3 +4,8 @@ github_email: ---REDACTED---
 
 samba_user: ---REDACTED---
 samba_password: ---REDACTED---
+
+wireguard_private_key: ---REDACTED---
+wireguard_public_key: ---REDACTED---
+wireguard_endpoint: ---REDACTED---
+wireguard_dns: ---REDACTED---
