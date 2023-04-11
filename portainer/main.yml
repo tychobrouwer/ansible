@@ -184,7 +184,7 @@
     - name: Ensure Portainer Docker container is running
       community.docker.docker_container:
         name: portainer
-        image: portainer/portainer-ce
+        image: portainer/portainer-ce:linux-amd64
         state: started
         # ports:
         #   - "8000:8000"
@@ -354,7 +354,7 @@
     - name: Ensure Passbolt Docker container is running
       community.docker.docker_container:
         name: passbolt
-        image: passbolt/passbolt:latest-ce
+        image: passbolt/passbolt:3.12.0-3-ce
         command:
           [
             "/usr/bin/wait-for.sh",

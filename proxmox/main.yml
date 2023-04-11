@@ -5,6 +5,13 @@
   vars_files:
     - vars.yml
 
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+        enabled: true
+
   pre_tasks:
     - name: Update cache if needed (Debian)
       ansible.builtin.apt:
@@ -35,6 +42,13 @@
         state: stopped
         enabled: false
       failed_when: false
+
+    - name: Ensure authorized ssh keys are set
+      ansible.builtin.copy:
+        src: ./authorized_keys
+        dest: "{{ ssh_key_location }}/authorized_keys"
+        mode: "0600"
+      notify: Restart sshd
 
     - name: Ensure packages are installed
       ansible.builtin.apt:
