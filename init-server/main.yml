@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: backup_server
+  hosts: ark_survival
 
   vars_files:
     - vars.yml
@@ -10,7 +10,7 @@
     - name: Restart sshd
       ansible.builtin.service:
         name: sshd
-        state: restarted
+        state: reloaded
         enabled: true
 
   pre_tasks:

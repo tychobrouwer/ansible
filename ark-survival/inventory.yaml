@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    ark_survival:
+      ansible_host: 192.168.178.114
+  vars:
+    ansible_user: root

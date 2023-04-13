@@ -1,0 +1,13 @@
+[Unit]
+Description=Ark Survival server service
+After=network.target
+
+[Service]
+Type=exec
+User={{ user_name }}
+Group={{ user_name }}
+WorkingDirectory=/home/{{ user_name }}/ark
+ExecStart=/home/{{ user_name }}/ark/ShooterGame/Binaries/Linux/ShooterGameServer Valguero_P?listen?Multihome=0.0.0.0?SessionName="{{ server_name }}"?MaxPlayers={{ server_max_players }}?QueryPort={{ server_query_port }}?RCONPort={{ server_rcon_port }}?Port={{ server_port }}?ServerAdminPassword={{ server_admin_password }} -server -log
+
+[Install]
+WantedBy=multi-user.target
