@@ -6,8 +6,12 @@ After=network.target
 Type=exec
 User={{ user_name }}
 Group={{ user_name }}
-WorkingDirectory=/home/{{ user_name }}/ark
-ExecStart=/home/{{ user_name }}/ark/ShooterGame/Binaries/Linux/ShooterGameServer Valguero_P?listen?Multihome=0.0.0.0?SessionName="{{ server_name }}"?MaxPlayers={{ server_max_players }}?QueryPort={{ server_query_port }}?RCONPort={{ server_rcon_port }}?Port={{ server_port }}?ServerAdminPassword={{ server_admin_password }} -server -log
+WorkingDirectory=/home/{{ user_name }}/ark/ShooterGame/Binaries/Linux
+ExecStartPre=/home/{{ user_name }}/steamcmd +force_install_dir /home/{{ user_name }}/ark +login anonymous +app_update {{ ark_app_id }} +quit
+ExecStart=/home/{{ user_name }}/ark/ShooterGame/Binaries/Linux/ShooterGameServer Valguero_P?listen?Multihome=0.0.0.0?SessionName="{{ server_name }}"?MaxPlayers={{ server_max_players }}?QueryPort={{ server_query_port }}?RCONEnabled=True?RCONPort={{ server_rcon_port }}?Port={{ server_port }}?ServerAdminPassword={{ server_admin_password }} -server -log -servergamelog -crossplay
+LimitNOFILE=100000
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s INT $MAINPID
 
 [Install]
 WantedBy=multi-user.target

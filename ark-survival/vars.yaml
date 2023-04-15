@@ -2,8 +2,12 @@
 user_name: arkserver
 
 ark_app_id: 376030
-server_name: Uitwijkse Clan
 server_max_players: 10
 server_query_port: 27015
 server_rcon_port: 32330
 server_port: 7777
+
+mod_ids:
+  - 1609138312
+  - 731604991
+  - 849985437

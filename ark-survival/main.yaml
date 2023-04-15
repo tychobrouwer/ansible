@@ -81,6 +81,31 @@
         dest: /etc/systemd/system/ark.service
         mode: "0644"
 
+    - name: Ensure ark file permissions are correct
+      ansible.builtin.file:
+        path: "/home/{{ user_name }}/ark"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: "0755"
+        recurse: true
+
+    - name: Ensure game user settings file is present
+      ansible.builtin.copy:
+        src: ./GameUserSettings.ini
+        dest: "/home/{{ user_name }}/ark/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: "0644"
+
+    - name: Ensure mods are present
+      ansible.builtin.copy:
+        src: ./mods/
+        dest: "/home/{{ user_name }}/ark/ShooterGame/Content/Mods/"
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: "0755"
+
     - name: Enable and start ark service
       ansible.builtin.service:
         name: ark

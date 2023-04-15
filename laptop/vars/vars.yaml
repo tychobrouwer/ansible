@@ -39,6 +39,7 @@ dnf_uninstall_packages:
   - gnome-weather
   - onlyoffice-desktopeditors
   - power-profiles-daemon
+  - vlc
 
 flatpak_install_packages:
   - com.github.eneshecan.WhatsAppForLinux
