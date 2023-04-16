@@ -256,16 +256,16 @@
 
     - name: Copy file backup script is on remote
       ansible.builtin.copy:
-        src: ./pbs-file-backup.sh
-        dest: /root/pbs-file-backup.sh
+        src: ./pbs-proxmox-backup.sh
+        dest: /root/pbs-proxmox-backup.sh
         mode: "0755"
 
     - name: Ensure file backup cron is present
       ansible.builtin.cron:
         name: "run file folder backup"
         minute: "0"
-        hour: "18,5"
-        job: "/root/pbs-file-backup.sh"
+        hour: "2,8,17,22"
+        job: "/root/pbs-proxmox-backup.sh"
 
 - name: Install NVIDIA drivers
   hosts: all

@@ -12,7 +12,8 @@ auth.txt
 ops.json
 dashy-conf.yml
 traefik.yml
-pbs-file-backup.sh
+pbs-proxmox-backup.sh
 *.pem
 mailspring-config.json
 matlab*
+wg0.conf
