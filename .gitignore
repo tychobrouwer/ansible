@@ -17,3 +17,4 @@ pbs-proxmox-backup.sh
 mailspring-config.json
 matlab*
 wg0.conf
+wg-dashboard.ini
