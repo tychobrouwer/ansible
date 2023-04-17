@@ -376,6 +376,7 @@
           EMAIL_TRANSPORT_DEFAULT_USERNAME: "{{ smtp_username }}"
           EMAIL_TRANSPORT_DEFAULT_PASSWORD: "{{ smtp_password }}"
           EMAIL_TRANSPORT_DEFAULT_TLS: "true"
+          PASSBOLT_META_DESCRIPTION: "{{ passbolt_description }}"
         volumes:
           - gpg_volume:/etc/passbolt/gpg
           - jwt_volume:/etc/passbolt/jwt
