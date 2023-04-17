@@ -1,7 +1,7 @@
 ---
 - name: Install Elm
   hosts: all
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../vars/vars.yaml
@@ -27,5 +27,5 @@
     - name: Set file permissions of elm
       ansible.builtin.file:
         path: /usr/local/bin/elm
-        mode: '0755'
+        mode: "0755"
       become: true

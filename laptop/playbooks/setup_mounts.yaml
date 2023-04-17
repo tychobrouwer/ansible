@@ -1,7 +1,7 @@
 ---
 - name: Set mounts configuration
   hosts: all
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../vars/vars.yaml
@@ -11,7 +11,7 @@
     - name: Set file permissions of mount.cifs
       ansible.builtin.file:
         path: /usr/sbin/mount.cifs
-        mode: '4755'
+        mode: "4755"
       become: true
 
     - name: Ensure cifspasswd is present

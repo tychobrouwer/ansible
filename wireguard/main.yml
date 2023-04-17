@@ -58,7 +58,7 @@
       ansible.builtin.copy:
         src: ./wg0.conf
         dest: /etc/wireguard/wg0.conf
-        mode: '0644'
+        mode: "0644"
 
     - name: Enable wg0 wireguard systemd service
       ansible.builtin.systemd:
@@ -87,20 +87,20 @@
       ansible.builtin.copy:
         src: ./wg-dashboard.ini
         dest: "{{ dashboard_install_location }}/src/wg-dashboard.ini"
-        mode: '0644'
+        mode: "0644"
 
     - name: Ensure wg dashboard service file is on remote (systemd)
       ansible.builtin.copy:
         src: ./wg-dashboard.service
         dest: /etc/systemd/system/wg-dashboard.service
-        mode: '0664'
+        mode: "0664"
       when: not ansible_distribution == "CentOS"
 
     - name: Ensure wg dashboard service file is on remote (sysvinit)
       ansible.builtin.copy:
         src: ./wg-dashboard
         dest: /etc/init.d/wg-dashboard
-        mode: '0755'
+        mode: "0755"
       when: ansible_distribution == "CentOS"
 
     - name: Ensure wg dashboard service is enabled and started

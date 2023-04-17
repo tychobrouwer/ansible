@@ -24,9 +24,7 @@
         state: present
       become: true
 
-
 - import_playbook: playbooks/setup_folders.yaml
-
 
 - import_playbook: playbooks/install_packages.yaml
 
@@ -42,7 +40,6 @@
 
 - import_playbook: playbooks/install_vivaldi.yaml
 
-
 - import_playbook: playbooks/setup_git.yaml
 
 - import_playbook: playbooks/setup_mounts.yaml
@@ -55,10 +52,8 @@
 
 - import_playbook: playbooks/setup_zsh.yaml
 
-
 - import_playbook: playbooks/get_matlab.yaml
 
 - import_playbook: playbooks/get_win_installers.yaml
-
 
 - import_playbook: playbooks/setup_dconf.yaml

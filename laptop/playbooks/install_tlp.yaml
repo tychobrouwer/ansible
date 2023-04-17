@@ -1,7 +1,7 @@
 ---
 - name: Install and set TLP power saving
   hosts: all
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../vars/vars.yaml
@@ -24,22 +24,4 @@
       ansible.builtin.systemd:
         name: systemd-rfkill.socket
         masked: yes
-      become: true
-
-    - name: Create Projects folder
-      ansible.builtin.file:
-        path: "/home/{{ user }}/{{ projects_dir }}"
-        state: directory
-        mode: "0755"
-
-    - name: Ensure SSH password authentication is disabled
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        state: present
-        validate: "sshd -t -f %s"
-      with_items:
-        - regexp: "^PasswordAuthentication"
-          line: "PasswordAuthentication no"
       become: true
