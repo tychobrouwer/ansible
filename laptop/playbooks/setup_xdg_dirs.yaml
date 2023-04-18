@@ -1,7 +1,7 @@
 ---
 - name: Configure custom user directories
   hosts: all
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../vars/vars.yaml

@@ -1,14 +1,14 @@
 ---
 - name: Configure wireguard
   hosts: all
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../vars/vars.yaml
 
   tasks:
     - name: Create Wireguard genkey
-      ansible.builtin.shell:  genkey | tee /etc/wireguard/private.key
+      ansible.builtin.shell: genkey | tee /etc/wireguard/private.key
       args:
         creates: /etc/wireguard/private.key
       become: true
@@ -16,11 +16,11 @@
     - name: Set file ownership of key
       ansible.builtin.file:
         path: /etc/wireguard/private.key
-        mode: '0600'
+        mode: "0600"
       become: true
 
     - name: Create Wireguard genkey
-      ansible.builtin.shell:  cat /etc/wireguard/private.key | wg pubkey | tee /etc/wireguard/public.key
+      ansible.builtin.shell: cat /etc/wireguard/private.key | wg pubkey | tee /etc/wireguard/public.key
       args:
         creates: /etc/wireguard/public.key
       become: true
@@ -41,5 +41,5 @@
     - name: Set file ownership of resolvconf
       ansible.builtin.file:
         path: /usr/sbin/resolvconf.openresolv
-        mode: '0755'
+        mode: "0755"
       become: true
