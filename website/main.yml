@@ -39,13 +39,13 @@
 
     - name: Ensure lighttpd group exists
       ansible.builtin.group:
-        name: "lighttpd"
+        name: lighttpd
         state: present
 
     - name: Ensure lighttpd user exists
       ansible.builtin.user:
-        name: "lighttpd"
-        group: "lighttpd"
+        name: lighttpd
+        group: lighttpd
         home: /var/www/html
         shell: /sbin/nologin
         state: present
@@ -63,3 +63,4 @@
         dest: /var/www/html/personal-website-elm
         single_branch: yes
         version: main
+        depth: 1

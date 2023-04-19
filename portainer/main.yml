@@ -123,6 +123,12 @@
         state: started
         enabled: true
 
+    - name: Ensure web network for Traefik is present
+      docker_network:
+        name: web
+        internal: false
+        state: present
+
 - name: Install Traefik container
   hosts: all
 
@@ -130,12 +136,6 @@
     - vars-private.yml
 
   tasks:
-    - name: Ensure web network for Traefik is present
-      docker_network:
-        name: web
-        internal: false
-        state: present
-
     - name: Ensure Traefik reverse proxy Docker container is running
       community.docker.docker_container:
         name: traefik

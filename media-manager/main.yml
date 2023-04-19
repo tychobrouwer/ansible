@@ -82,19 +82,19 @@
           - openvpn
         state: present
 
-    - name: Ensure NordVPN auth file is present on remore
+    - name: Ensure NordVPN auth file is present on remote
       ansible.builtin.copy:
         src: ./auth.txt
         dest: /etc/openvpn/auth.txt
         mode: "0644"
 
-    - name: Ensure NordVPN connection file is present on remore
+    - name: Ensure NordVPN connection file is present on remote
       ansible.builtin.copy:
         src: ./nl986.conf
         dest: /etc/openvpn/nl986.conf
         mode: "0644"
 
-    - name: Ensure openvpn config is present on remore
+    - name: Ensure openvpn config is present on remote
       ansible.builtin.copy:
         src: ./openvpn
         dest: /etc/default/openvpn
@@ -200,7 +200,7 @@
 
     - name: Ensure Sonarr repository is in sources list
       ansible.builtin.apt_repository:
-        repo: deb https://apt.sonarr.tv/debian buster main
+        repo: deb https://apt.sonarr.tv/debian bullseye main
         state: present
 
     - name: Ensure Sonarr is installed
