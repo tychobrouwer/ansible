@@ -2,7 +2,7 @@
 Description={{ item.description }}
 RequiresMountsFor={{ item.requires }}
 Requires=NetworkManager.service dbus.service wpa_supplicant.service
-After=NetworkManager.service dbus.service wpa_supplicant.service
+After=sys-devices-virtual-net-wg0.device NetworkManager.service dbus.service wpa_supplicant.service
 
 [Mount]
 What={{ item.what }}
@@ -10,6 +10,7 @@ Where={{ item.where }}
 Type=cifs
 Options=uid=tychob,gid=tychob,_netdev,nofail,credentials=/etc/cifspasswd
 TimeoutSec=10
+LazyUnmount=true
 
 [Install]
 WantedBy=multi-user.target

@@ -74,7 +74,7 @@
         name: "{{ user_name }}"
         group: "{{ user_name }}"
         uid: 1000
-        password: "{{ jellyfin_password | password_hash(hashtype='sha512', salt=jellyfin_salt) }}"
+        password: "{{ jellyfin_password | ansible.builtin.password_hash(hashtype='sha512', salt=jellyfin_salt) }}"
         state: present
 
     - name: Ensure jellyfin is in share permissions

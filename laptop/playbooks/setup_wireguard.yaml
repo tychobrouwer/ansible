@@ -7,35 +7,11 @@
     - ../vars/vars.yaml
 
   tasks:
-    - name: Create Wireguard genkey
-      ansible.builtin.shell: genkey | tee /etc/wireguard/private.key
-      args:
-        creates: /etc/wireguard/private.key
-      become: true
-
-    - name: Set file ownership of key
-      ansible.builtin.file:
-        path: /etc/wireguard/private.key
-        mode: "0600"
-      become: true
-
-    - name: Create Wireguard genkey
-      ansible.builtin.shell: cat /etc/wireguard/private.key | wg pubkey | tee /etc/wireguard/public.key
-      args:
-        creates: /etc/wireguard/public.key
-      become: true
-
     - name: Ensure Wireguard config is present
       ansible.builtin.template:
         src: ../templates/wg0.j2
         dest: /etc/wireguard/wg0.conf
         mode: "0600"
-      become: true
-
-    - name: Enable Wireguard service wg0
-      ansible.builtin.service:
-        name: wg-quick@wg0
-        enabled: yes
       become: true
 
     - name: Set file ownership of resolvconf
