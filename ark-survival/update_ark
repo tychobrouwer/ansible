@@ -1,1 +1,3 @@
-"/home/{{ user_name }}/steamcmd force_install_dir ./ark login anonymous app_update 376030 quit"
+su arkserver
+
+/home/arkserver/steamcmd +force_install_dir /home/arkserver/ark +login anonymous +app_update 376030 validate +quit

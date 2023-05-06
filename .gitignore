@@ -8,7 +8,7 @@ cert-proxmox.crt
 cert-proxmox-backup.crt
 cert-cloudflare-origin.pem
 cert-cloudflare-origin.key
-auth.txt
+pass
 ops.json
 dashy-conf.yml
 traefik.yml

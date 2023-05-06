@@ -58,14 +58,20 @@
 
     - name: Ensure NordVPN auth file is present on remore
       ansible.builtin.copy:
-        src: ./auth.txt
-        dest: /etc/openvpn/auth.txt
+        src: ./pass
+        dest: /etc/openvpn/pass
+        mode: "0400"
+
+    - name: Ensure NordVPN connection file is present on remore
+      ansible.builtin.copy:
+        src: ./nl900.ovpn
+        dest: /etc/openvpn/client.conf
         mode: "0644"
 
     - name: Ensure NordVPN connection file is present on remore
       ansible.builtin.copy:
-        src: ./nl986.conf
-        dest: /etc/openvpn/nl986.conf
+        src: ./nl900.ovpn
+        dest: /etc/openvpn/nl900.ovpn
         mode: "0644"
 
     - name: Ensure openvpn config is present on remore
@@ -76,7 +82,7 @@
 
     - name: Ensure openvpn service is enabled and started
       ansible.builtin.service:
-        name: openvpn
+        name: client
         state: started
         enabled: true
 
@@ -87,10 +93,24 @@
     - vars.yml
 
   tasks:
-    - name: Ensure qBittorrent is installed
-      ansible.builtin.package:
-        name: qbittorrent-nox
-        state: present
+    # - name: Ensure qBittorrent is installed
+    #   ansible.builtin.package:
+    #     name: qbittorrent-nox
+    #     state: present
+    - name: Ensure qBittorrent bin folder is present
+      ansible.builtin.file:
+        path: "/home/{{ torrentuser_name }}/bin"
+        state: directory
+        owner: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
+
+    - name: Download foo.conf
+      ansible.builtin.get_url:
+        url: "{{ qBittorrent_nox_static_url }}"
+        dest: "/home/{{ torrentuser_name }}/bin/qbittorrent-nox"
+        mode: '0755'
+        owner: "{{ torrentuser_name }}"
+        group: "{{ torrentuser_name }}"
 
     - name: Ensure qBittorrent config folder is present
       ansible.builtin.file:
@@ -135,7 +155,7 @@
     - name: Clone qBittorrent theme git repo
       ansible.builtin.git:
         repo: "{{ qBittorrent_theme_git }}"
-        dest: "/home/{{ torrentuser_name }}/nightwalker"
+        dest: "/home/{{ torrentuser_name }}/VueTorrent"
         force: yes
 
     - name: Ensure qbittorrent service is enabled and reloaded

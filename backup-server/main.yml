@@ -44,22 +44,6 @@
         groups: "{{ pbsuser_name }}"
         state: present
 
-    - name: Ensure backup of proxmoxlib.js is present
-      ansible.builtin.copy:
-        src: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-        dest: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js.bak
-        force: false
-        remote_src: true
-
-    - name: Ensure subscription warning is disabled
-      ansible.builtin.replace:
-        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-        regexp: "Ext.Msg.show.*?\n.*?title: gettext..No valid subscription..,"
-        replace: >
-          void({
-                                      title: gettext('No valid subscription'),
-      notify: Restart proxmox-backup-proxy
-
 - name: Install Proxmox Backup Server
   hosts: all
 
@@ -82,3 +66,19 @@
         name:
           - proxmox-backup-server
         state: present
+
+    - name: Ensure backup of proxmoxlib.js is present
+      ansible.builtin.copy:
+        src: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        dest: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js.bak
+        force: false
+        remote_src: true
+
+    - name: Ensure subscription warning is disabled
+      ansible.builtin.replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "Ext.Msg.show.*?\n.*?title: gettext..No valid subscription..,"
+        replace: >
+          void({
+                                      title: gettext('No valid subscription'),
+      notify: Restart proxmox-backup-proxy

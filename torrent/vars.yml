@@ -3,4 +3,5 @@ torrentuser_name: torrentuser
 share_group: sharegroup
 qbit_matUI_version: 1.16.4
 torrent_save_path: /share/video-share/Torrents
-qBittorrent_theme_git: https://github.com/repslet/nightwalker.git
+qBittorrent_theme_git: https://github.com/WDaan/VueTorrent.git
+qBittorrent_nox_static_url: https://github.com/userdocs/qbittorrent-nox-static/releases/latest/download/x86_64-qbittorrent-nox

@@ -30,9 +30,9 @@ all:
           ansible_host: 192.168.178.112
         minecraft:
           ansible_host: 192.168.178.113
-    projects:
-      hosts:
-        accontroller:
-          ansible_host: 192.168.178.121
+    # projects:
+    #   hosts:
+    #     accontroller:
+    #       ansible_host: 192.168.178.121
   vars:
     ansible_user: root

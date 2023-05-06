@@ -194,6 +194,10 @@ sections:
         icon: favicon
         url: https://www.reddit.com/
 
+      - title: Linkedin
+        icon: hl-linkedin
+        url: ---REDACTED---
+
       - title: IMDB
         icon: favicon
         url: https://www.imdb.com/

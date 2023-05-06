@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: ark_survival
+  hosts: backup_server
 
   vars_files:
     - vars.yml

@@ -7,7 +7,7 @@ nss-lookup.target
 [Service] 
 Type=exec
 User=torrentuser
-ExecStart=/usr/bin/qbittorrent-nox
+ExecStart=/home/torrentuser/bin/qbittorrent-nox
 
 [Install]
 WantedBy=multi-user.target
