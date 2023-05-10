@@ -1,0 +1,84 @@
+---
+- name: Setup Proxmox Backup Server
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+
+  handlers:
+    - name: Restart proxmox-backup-proxy
+      ansible.builtin.service:
+        name: proxmox-backup-proxy
+        state: restarted
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure pbs group exists
+      ansible.builtin.group:
+        name: "{{ pbsuser_name }}"
+        gid: 3510
+        state: present
+
+    - name: Ensure pbs user is present
+      ansible.builtin.user:
+        name: "{{ pbsuser_name }}"
+        group: "{{ pbsuser_name }}"
+        uid: 1010
+        state: present
+
+    - name: Ensure root is in pbs group
+      ansible.builtin.user:
+        name: root
+        groups: "{{ pbsuser_name }}"
+        state: present
+
+- name: Install Proxmox Backup Server
+  hosts: all
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Ensure proxmox signing key is installed
+      ansible.builtin.apt_key:
+        url: "{{ pbs_gpg_key }}"
+        state: present
+
+    - name: Ensure proxmox repository is in sources list
+      ansible.builtin.apt_repository:
+        repo: "{{ pbs_apt_repo }}"
+        state: present
+
+    - name: Install Proxmox Backup Server
+      ansible.builtin.package:
+        name:
+          - proxmox-backup-server
+        state: present
+
+    - name: Ensure backup of proxmoxlib.js is present
+      ansible.builtin.copy:
+        src: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        dest: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js.bak
+        force: false
+        remote_src: true
+
+    - name: Ensure subscription warning is disabled
+      ansible.builtin.replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "Ext.Msg.show.*?\n.*?title: gettext..No valid subscription..,"
+        replace: >
+          void({
+                                      title: gettext('No valid subscription'),
+      notify: Restart proxmox-backup-proxy

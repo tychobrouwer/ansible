@@ -1,0 +1,103 @@
+---
+- name: Initiate server
+  hosts: backup_server
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: reloaded
+        enabled: true
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure packages are updated
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure default packages are installed
+      ansible.builtin.package:
+        name:
+          - git
+          - python3
+          - python3-pip
+          - openssh-server
+          - net-tools
+        state: present
+
+    - name: Ensure SSH password authentication is disabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: "sshd -t -f %s"
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+
+    - name: Ensure .ssh folder is present
+      ansible.builtin.file:
+        path: "{{ ssh_key_location }}"
+        state: directory
+        mode: "0700"
+
+    - name: Ensure OpenSSH keypair with the default values exists (4096 bits, rsa)
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_location }}/id_rsa"
+        regenerate: never
+
+    - name: Ensure authorized ssh keys are set
+      ansible.builtin.copy:
+        dest: "{{ ssh_key_location }}/authorized_keys"
+        content: "{{ authorized_keys }}"
+        mode: "0600"
+      notify: Restart sshd
+
+    - name: Ensure git system name is set
+      community.general.git_config:
+        name: user.name
+        scope: system
+        value: "{{ github_name }}"
+
+    - name: Ensure git system email is set
+      community.general.git_config:
+        name: user.email
+        scope: system
+        value: "{{ github_email }}"
+
+    - name: Ensure git system default branch is set
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: system
+        value: "main"
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.command: locale-gen en_GB.UTF-8
+      changed_when: false
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.debconf:
+        name: locales
+        question: locales/default_environment_locale
+        value: en_GB.UTF-8
+        vtype: select
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.command: localectl set-locale LANG=en_GB.UTF-8
+      changed_when: false
+
+    - name: Set default locale to en_GB.UTF-8
+      ansible.builtin.shell: ". /etc/default/locale"
+      changed_when: false

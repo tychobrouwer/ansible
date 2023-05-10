@@ -1,0 +1,8 @@
+---
+torrentuser_password: ---REDACTED---
+torrentuser_salt: ---REDACTED---
+
+torrent_web_password: ---REDACTED---
+
+nordvpn_service_username: ---REDACTED---
+nordvpn_service_password: ---REDACTED---

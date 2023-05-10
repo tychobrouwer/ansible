@@ -1,0 +1,95 @@
+---
+- name: Install factorio server
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  vars:
+    xz_package: xz-utils
+
+  pre_tasks:
+    - name: Overwrite vars for Red Hat
+      set_fact:
+        xz_package: xz
+      when: ansible_os_family == "RedHat"
+
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+    - name: Ensure xz utils is installed
+      ansible.builtin.package:
+        name:
+          - "{{ xz_package }}"
+        state: present
+
+  tasks:
+    - name: Ensure factorio group exists
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+
+    - name: Ensure factorio user exists
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        group: "{{ group_name }}"
+        password: "{{ factorio_password | password_hash(hashtype='sha512', salt=factorio_salt) }}"
+        state: present
+
+    - name: Get and unarchive factorio headless server files if not present
+      ansible.builtin.unarchive:
+        src: "{{ factorio_download_url }}"
+        dest: "{{ factorio_install_location }}"
+        remote_src: true
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+
+    - name: Ensure factorio script is executable
+      ansible.builtin.file:
+        path: "{{ factorio_install_location }}/factorio/bin/x64/factorio"
+        mode: +x
+
+    - name: Ensure factorio save file is on remote
+      ansible.builtin.copy:
+        src: "./{{ save_name }}.zip"
+        dest: "{{ factorio_install_location }}/factorio/{{ save_name }}.zip"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        mode: '0664'
+        force: false
+
+    - name: Ensure factorio service file is on remote (systemd)
+      ansible.builtin.copy:
+        src: ./files/factorio.service
+        dest: /etc/systemd/system/factorio.service
+        mode: '0664'
+      when: not ansible_distribution == "CentOS"
+
+    - name: Ensure factorio service file is on remote (sysvinit)
+      ansible.builtin.copy:
+        src: ./files/factorio
+        dest: /etc/init.d/factorio
+        mode: '0755'
+      when: ansible_distribution == "CentOS"
+
+    - name: Ensure factorio service is enabled and started
+      ansible.builtin.service:
+        name: factorio
+        state: started
+        enabled: true
+
+    - name: Ensure factorio file permissions are correct
+      ansible.builtin.file:
+        path: "{{ factorio_install_location }}/factorio"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        recurse: true

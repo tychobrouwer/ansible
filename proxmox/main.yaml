@@ -1,0 +1,321 @@
+---
+- name: Setup Proxmox server
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+        enabled: true
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Ensure packages are updated
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: pve-ha-lrm
+        state: stopped
+        enabled: false
+
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: pve-ha-crm
+        state: stopped
+        enabled: false
+
+    - name: Ensure services are disabled
+      ansible.builtin.service:
+        name: corosync
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Ensure authorized ssh keys are set
+      ansible.builtin.copy:
+        dest: "{{ ssh_key_location }}/authorized_keys"
+        content: "{{ authorized_keys }}"
+        mode: "0600"
+      notify: Restart sshd
+
+    - name: Ensure packages are installed
+      ansible.builtin.apt:
+        name:
+          - neofetch
+          - htop
+          - iotop
+          - ifupdown2
+        state: present
+
+- name: Enable email notifications
+  hosts: all
+
+  vars_files:
+    - vars-private.yaml
+
+  handlers:
+    - name: Restart postfix
+      ansible.builtin.command: "postfix reload"
+
+  tasks:
+    - name: Ensure packages are installed
+      ansible.builtin.apt:
+        name:
+          - libsasl2-modules
+          - mailutils
+        state: present
+
+    - name: Ensure password file is present
+      ansible.builtin.copy:
+        dest: /etc/postfix/sasl_passwd
+        content: "smtp.gmail.com {{ email }}:{{ email_password }}"
+        mode: "0600"
+        notify: Restart postfix
+
+    - name: Ensure credientials database is present
+      ansible.builtin.command: postmap hash:/etc/postfix/sasl_passwd
+      changed_when: false
+
+    - name: Ensure relayhost is commented
+      ansible.builtin.lineinfile:
+        path: /etc/postfix/main.cf
+        firstmatch: true
+        regexp: '^relayhost =$'
+        line: '#relayhost ='
+      notify: Restart postfix
+
+    - name: Ensure smtp config is in postfix config
+      ansible.builtin.blockinfile:
+        path: /etc/postfix/main.cf
+        block: |
+          relayhost = smtp.gmail.com:587
+          smtp_use_tls = yes
+          smtp_sasl_auth_enable = yes
+          smtp_sasl_security_options =
+          smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+          smtp_tls_CAfile = /etc/ssl/certs/Entrust_Root_Certification_Authority.pem
+          smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_tls_session_cache
+          smtp_tls_session_cache_timeout = 3600s
+      notify: Restart postfix
+
+- name: Applying personalization to Proxmox
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+  handlers:
+    - name: Restart pveproxy
+      ansible.builtin.service:
+        name: pveproxy
+        state: restarted
+
+  tasks:
+    - name: Ensure backup of proxmoxlib.js is present
+      ansible.builtin.copy:
+        src: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        dest: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js.bak
+        force: false
+        remote_src: true
+
+    - name: Ensure subscription warning is disabled
+      ansible.builtin.replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "Ext.Msg.show.*?\n.*?title: gettext..No valid subscription..,"
+        replace: >
+          void({
+                                      title: gettext('No valid subscription'),
+      notify: Restart pveproxy
+
+    - name: Ensure icloudpd python is installed
+      ansible.builtin.pip:
+        name: icloudpd
+        state: present
+
+- name: Create PBS users and folders
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Ensure pbs user group exists
+      ansible.builtin.group:
+        name: "{{ pbsuser_name }}"
+        gid: 3510
+        state: present
+
+    - name: Ensure pbs user exists
+      ansible.builtin.user:
+        name: "{{ pbsuser_name }}"
+        group: "{{ pbsuser_name }}"
+        uid: 1010
+        state: present
+
+    - name: Ensure pbs folder exists
+      ansible.builtin.file:
+        path: /mnt/data1/pbs-dumps
+        state: directory
+
+- name: Create share/ SMB users and folders
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Ensure share group exists
+      ansible.builtin.group:
+        name: "{{ share_group }}"
+        gid: 3500
+        state: present
+
+    - name: Ensure share user group exists
+      ansible.builtin.group:
+        name: "{{ shareuser_name }}"
+        gid: 3501
+        state: present
+
+    - name: Ensure share user exists
+      ansible.builtin.user:
+        name: "{{ shareuser_name }}"
+        group: "{{ shareuser_name }}"
+        groups: "{{ share_group }}"
+        uid: 1000
+        state: present
+
+    - name: Ensure root is in share group
+      ansible.builtin.user:
+        name: root
+        groups: "{{ share_group }}"
+        state: present
+
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /media
+        state: directory
+        mode: "0775"
+
+    - name: Ensure video share folder has correct permissions
+      ansible.builtin.file:
+        path: /mnt/data0/video-share
+        owner: "{{ shareuser_name }}"
+        group: "{{ share_group }}"
+        recurse: true
+        mode: "0775"
+
+    - name: Ensure file share folder has correct permissions
+      ansible.builtin.file:
+        path: /media/file-share
+        owner: "{{ shareuser_name }}"
+        group: "{{ share_group }}"
+        recurse: true
+        mode: "0775"
+
+- name: Set Proxmox Backup Client file level backups
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  tasks:
+    - name: Ensure proxmox signing key is installed
+      ansible.builtin.apt_key:
+        url: "{{ proxmox_gpg_key }}"
+        state: present
+
+    - name: Ensure proxmox repository is in sources list
+      ansible.builtin.apt_repository:
+        repo: "{{ pbs_client_apt_repo }}"
+        state: present
+
+    - name: Install Proxmox Backup Client
+      ansible.builtin.package:
+        name:
+          - proxmox-backup-client
+        state: present
+
+    - name: Ensure backup is in share group
+      ansible.builtin.user:
+        name: backup
+        groups: "{{ share_group }}"
+        state: present
+
+    - name: Copy file backup script is on remote
+      ansible.builtin.template:
+        src: ./files/pbs-proxmox-backup.sh.j2
+        dest: /root/pbs-proxmox-backup.sh
+        mode: "0755"
+
+    - name: Ensure file backup cron is present
+      ansible.builtin.cron:
+        name: "run file folder backup"
+        minute: "0"
+        hour: "2,8,17,22"
+        job: "/root/pbs-proxmox-backup.sh"
+
+- name: Install NVIDIA drivers
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Get proxmox version
+      ansible.builtin.command: uname -r
+      changed_when: false
+      register: proxmox_info
+
+    - name: Install proxmox headers are installed
+      ansible.builtin.apt:
+        name: "pve-headers-{{ proxmox_info.stdout }}"
+        state: present
+
+    # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
+    - name: Ensure NVIDIA installer is present
+      ansible.builtin.get_url:
+        url: "{{ NVIDIA_download_url }}"
+        dest: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run"
+        mode: "0755"
+
+    - name: Check if NVIDIA is installed
+      ansible.builtin.command: "nvidia-smi"
+      register: nvidia_result
+      failed_when: false
+      changed_when: false
+
+    - name: Run NVIDIA installer
+      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq"
+      failed_when: false
+      when: "'command not found' in nvidia_result.stdout"
+
+    - name: ensure NVIDIA rules are present
+      ansible.builtin.copy:
+        src: ./files/70-nvidia.rules
+        dest: /etc/udev/rules.d/70-nvidia.rules
+        mode: "0644"
+
+    - name: Add NVIDIA and nvidia_uvm to modules
+      ansible.builtin.blockinfile:
+        path: /etc/modules-load.d/modules.conf
+        block: |
+          nvidia
+          nvidia_uvm
+
+    - name: Update initramfs
+      ansible.builtin.command: update-initramfs -u
+      changed_when: false
+      when: "'command not found' in nvidia_result.stdout"

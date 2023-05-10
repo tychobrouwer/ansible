@@ -1,0 +1,14 @@
+---
+email: ---REDACTED---
+email_password: ---REDACTED---
+pbs_backup_repo: ---REDACTED---
+pbs_backup_token: ---REDACTED---
+pbd_backup_fingerprint: ---REDACTED---
+
+authorized_keys: |
+  ---REDACTED---
+  ---REDACTED---
+  ---REDACTED---
+
+pbs_password: ---REDACTED---
+pbs_fingerprint: ---REDACTED---
