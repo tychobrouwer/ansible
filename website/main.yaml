@@ -57,6 +57,19 @@
         group: lighttpd
         recurse: yes
 
+    - name: Ensure tmp directory exists
+      ansible.builtin.file:
+        path: /tmp/lighttpdcompress
+        state: directory
+        mode: '0755'
+
+    - name: Ensure tmp directory permissions are set
+      ansible.builtin.file:
+        path: /tmp/lighttpdcompress
+        owner: lighttpd
+        group: lighttpd
+        recurse: yes
+
     - name: Clone website to local
       ansible.builtin.git:
         repo: git@github.com:TychoBrouwer/personal-website-elm.git
