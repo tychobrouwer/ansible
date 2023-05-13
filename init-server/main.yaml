@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: backup_server
+  hosts: retropie
 
   vars_files:
     - vars.yaml
