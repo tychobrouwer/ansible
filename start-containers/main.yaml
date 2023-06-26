@@ -15,9 +15,6 @@
         - 107
         - 108
         - 111
-        - 112
-        - 113
-        - 121
       register: container_start_result
       changed_when: "'already running' not in container_start_result.stdout"
       failed_when: false
@@ -34,9 +31,6 @@
         - 107
         - 108
         - 111
-        - 112
-        - 113
-        - 121
       register: dhclient_result
       changed_when: "'File exists' not in dhclient_result.stdout"
 
