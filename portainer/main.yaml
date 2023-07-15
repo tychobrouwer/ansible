@@ -150,7 +150,7 @@
     - name: Ensure Traefik reverse proxy Docker container is running
       community.docker.docker_container:
         name: traefik
-        image: traefik:v2.9
+        image: traefik:latest
         state: started
         command:
           - --api.insecure=true
@@ -336,6 +336,8 @@
       community.docker.docker_container:
         name: mariadb
         image: mariadb:10.3
+        labels:
+          watchtower.enable: "false"
         env:
           MYSQL_ROOT_PASSWORD: "{{ mariadb_root_password }}"
           MYSQL_DATABASE: "passbolt"
@@ -365,7 +367,7 @@
     - name: Ensure Passbolt Docker container is running
       community.docker.docker_container:
         name: passbolt
-        image: passbolt/passbolt:3.12.0-3-ce
+        image: passbolt/passbolt:latest
         command:
           [
             "/usr/bin/wait-for.sh",
@@ -414,3 +416,18 @@
       ansible.builtin.debug:
         msg: "{{ passbolt_result.stdout }}"
       when: "'Username: The username is already in use' not in passbolt_result.stdout"
+
+- name: Install watchtower container
+  hosts: all
+
+  tasks:
+    - name: Ensure Watchtower Docker container is running
+      community.docker.docker_container:
+        name: watchtower
+        image: containrrr/watchtower:latest
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /root/.docker/config.json:/config.json
+        ports:
+          - "3080:3080"
+        restart_policy: unless-stopped
