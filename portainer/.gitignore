@@ -1,3 +1,3 @@
 vars-private.yaml
 grafana.ini
-traefik.yaml
+traefik-dynamic.yaml

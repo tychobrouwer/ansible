@@ -39,52 +39,27 @@
         dest: /root/cert-proxmox.crt
         content: "{{ cert_proxmox_backup }}"
 
+    - name: Ensure cloudflare origin certificate is on remote
+      copy:
+        dest: /root/tbrouwer-cloudflare-origin.cert
+        content: "{{ cloudflare_origin_cert }}"
+
+    - name: Ensure cloudflare origin key is on remote
+      copy:
+        dest: /root/tbrouwer-cloudflare-origin.key
+        content: "{{ cloudflare_origin_key }}"
+
     - name: Ensure dashy config is on remote
       ansible.builtin.template:
         src: ./templates/dashy-conf.yaml.j2
         dest: /root/dashy-conf.yaml
         mode: "0644"
 
-    - name: Ensure UFW rule for first private CIDR block is present
-      ansible.builtin.command: ufw allow from 10.0.0.0/8
-      register: ufw_cidr_a
-      changed_when: "'Rule added' in ufw_cidr_a.stdout"
-
-    - name: Ensure UFW rule for second private CIDR block is present
-      ansible.builtin.command: ufw allow from 172.16.0.0/12
-      register: ufw_cidr_b
-      changed_when: "'Rule added' in ufw_cidr_b.stdout"
-
-    - name: Ensure UFW rule for third private CIDR block is present
-      ansible.builtin.command: ufw allow from 192.168.0.0/16
-      register: ufw_cidr_c
-      changed_when: "'Rule added' in ufw_cidr_c.stdout"
-
-    - name: Ensure UFW rule for cloudflare ips (https://www.cloudflare.com/en-gb/ips/)
-      ansible.builtin.command: "ufw allow proto tcp from {{ item }} to any port 80"
-      loop:
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 108.162.192.0/18
-        - 131.0.72.0/22
-        - 141.101.64.0/18
-        - 162.158.0.0/15
-        - 172.64.0.0/13
-        - 173.245.48.0/20
-        - 188.114.96.0/20
-        - 190.93.240.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-      register: ufw_web
-      changed_when: "'Rule added' in ufw_web.stdout"
-
-    - name: Ensure UFW is enabled
-      ansible.builtin.command: ufw --force enable
-      register: ufw_enable
-      changed_when: "'active and enabled' not in ufw_enable.stdout"
+    - name: Ensure traefik static config is on remote
+      ansible.builtin.template:
+        src: ./templates/traefik-static.yaml.j2
+        dest: /root/traefik-static.yaml
+        mode: "0644"
 
 - name: Install Docker
   hosts: all
@@ -122,12 +97,6 @@
           - containerd.io
         state: present
 
-    - name: Ensure docker respects UFW rules
-      ansible.builtin.copy:
-        src: ./config/default-docker
-        dest: /etc/default/docker
-        mode: "0644"
-
     - name: Ensure docker service is started and enabled
       ansible.builtin.service:
         name: docker
@@ -136,7 +105,7 @@
 
     - name: Ensure web network for Traefik is present
       docker_network:
-        name: web
+        name: web-secure
         internal: false
         state: present
 
@@ -153,33 +122,39 @@
         image: traefik:latest
         state: started
         command:
-          - --api.insecure=true
-          - --log.level=DEBUG
-          - --api.dashboard=true
-          - --providers.docker=true
-          - --providers.docker.exposedbydefault=false
-          - --providers.docker.network=web
-          - --providers.file.filename=/etc/traefik/dynamic.yaml
-          - --entrypoints.web.address=:80
-          - --accessLog.filePath=/root/access.log
-          - --accessLog.format=json
-          - --accesslog.fields.headers.defaultmode=keep
-          - --accesslog.fields.headers.names.x-request-id=keep
-          - --metrics.influxDB2.address=http://192.168.178.103:8086
-          - "--metrics.influxDB2.token={{ influxdb_secret }}"
-          - --metrics.influxDB2.org=homelab
-          - --metrics.influxDB2.bucket=traefik
-          - --metrics.influxDB2.pushInterval=10s
+          - --configFile=/etc/traefik/static.yaml
+          # - --providers.docker=true
+          # - --providers.docker.exposedbydefault=false
+          # - --providers.docker.endpoint=unix:///var/run/docker.sock
+          # - --providers.file.filename=/etc/traefik/dynamic.yaml
+          # - --entryPoints.web.address=:80
+          # - --entryPoints.web.http.redirections.entryPoint.to=web-secure
+          # - --entryPoints.web.http.redirections.entryPoint.scheme=https
+          # - --entryPoints.web.http.redirections.entryPoint.permanent=true
+          # - --entryPoints.web-secure.address=:443
+          # - --entryPoints.web-secure.http.tls.options=default
+          # - --accessLog.filePath=/root/access.log
+          # - --accessLog.format=json
+          # - --accesslog.fields.headers.defaultmode=keep
+          # - --accesslog.fields.headers.names.x-request-id=keep
+          # - --metrics.influxDB2.address=http://192.168.178.103:8086
+          # - "--metrics.influxDB2.token={{ influxdb_secret }}"
+          # - --metrics.influxDB2.org=homelab
+          # - --metrics.influxDB2.bucket=traefik
+          # - --metrics.influxDB2.pushInterval=10s
         ports:
-          - "80:80"
+          - "443:443"
           - "8080:8080"
         restart_policy: unless-stopped
+        networks:
+          - name: web-secure
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
-          - /root/traefik.yaml:/etc/traefik/dynamic.yaml
-          - /root/cert-proxmox.crt:/root/cert-proxmox.crt
-        networks:
-          - name: web
+          - /root/traefik-static.yaml:/etc/traefik/static.yaml
+          - /root/traefik-dynamic.yaml:/etc/traefik/dynamic.yaml
+          - /root/cert-proxmox.crt:/root/cert-proxmox.crt:ro
+          - /root/tbrouwer-cloudflare-origin.cert:/root/tbrouwer-cloudflare-origin.cert:ro
+          - /root/tbrouwer-cloudflare-origin.key:/root/tbrouwer-cloudflare-origin.key:ro
 
 - name: Install Portainer container
   hosts: all
@@ -200,15 +175,16 @@
         ports:
           - "8000:8000"
           - "9000:9000"
-        networks:
-          - name: web
         labels:
           traefik.enable: "true"
           traefik.http.routers.portainer.rule: "Host(`portainer.{{ root_domain }}`)"
-          traefik.http.routers.portainer.entrypoints: "web"
+          traefik.http.routers.portainer.entrypoints: "web-secure"
           traefik.http.routers.portainer.service: "portainer"
+          traefik.http.routers.portainer.tls: "true"
           traefik.http.services.portainer.loadbalancer.server.port: "9000"
         restart_policy: unless-stopped
+        networks:
+          - name: web-secure
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
@@ -227,12 +203,13 @@
         labels:
           traefik.enable: "true"
           traefik.http.routers.dashy.rule: "Host(`dash.{{ root_domain }}`)"
-          traefik.http.routers.dashy.entrypoints: "web"
+          traefik.http.routers.dashy.entrypoints: "web-secure"
+          traefik.http.routers.dashy.tls: "true"
         state: started
         # ports:
         #   - "90:80"
         networks:
-          - name: web
+          - name: web-secure
         volumes:
           - /root/dashy-conf.yaml:/app/public/conf.yml
         restart_policy: unless-stopped
@@ -309,13 +286,14 @@
         image: grafana/grafana-enterprise:latest
         # ports:
         #   - "3000:3000"
-        networks:
-          - name: web
         labels:
           traefik.enable: "true"
           traefik.http.routers.grafana.rule: "Host(`grafana.{{ root_domain }}`)"
-          traefik.http.routers.grafana.entrypoints: "web"
+          traefik.http.routers.grafana.entrypoints: "web-secure"
+          traefik.http.routers.grafana.tls: "true"
           traefik.http.services.grafana.loadbalancer.server.port: "3000"
+        networks:
+          - name: web-secure
         volumes:
           - /root/grafana.ini:/etc/grafana/grafana.ini
           - grafana_data:/var/lib/grafana
@@ -397,12 +375,13 @@
         labels:
           traefik.enable: "true"
           traefik.http.routers.passbolt.rule: "Host(`passbolt.{{ root_domain }}`)"
-          traefik.http.routers.passbolt.entrypoints: "web"
-        networks:
-          - name: web
+          traefik.http.routers.passbolt.entrypoints: "web-secure"
+          traefik.http.routers.passbolt.tls: "true"
         # ports:
         #   - 80:80
         #   - 443:443
+        networks:
+          - name: web-secure
 
     - name: Ensure passbolt admin is present
       community.docker.docker_container_exec:

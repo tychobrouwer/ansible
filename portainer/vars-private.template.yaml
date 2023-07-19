@@ -18,6 +18,16 @@ cert_proxmox_backup: |
   ---REDACTED---
   -----END CERTIFICATE-----
 
+cloudflare_origin_cert: |
+  -----BEGIN CERTIFICATE-----
+  ---REDACTED---
+  -----END CERTIFICATE-----
+
+cloudflare_origin_key:
+  -----BEGIN PRIVATE KEY-----
+  ---REDACTED---
+  -----BEGIN PRIVATE KEY-----
+
 dashy_description: ---REDACTED---
 dashy_domain: ---REDACTED---
 dashy_github: ---REDACTED---
