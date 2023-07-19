@@ -2,10 +2,6 @@
 - name: Setup server
   hosts: all
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
-
   pre_tasks:
     - name: Update cache if needed (Debian)
       ansible.builtin.apt:
@@ -24,7 +20,6 @@
           - ca-certificates
           - curl
           - gnupg
-          - ufw
         state: present
 
   tasks:
@@ -32,33 +27,6 @@
       ansible.builtin.copy:
         src: ./config/
         dest: /root
-        mode: "0644"
-
-    - name: Ensure proxmox certificate is on remote
-      copy:
-        dest: /root/cert-proxmox.crt
-        content: "{{ cert_proxmox_backup }}"
-
-    - name: Ensure cloudflare origin certificate is on remote
-      copy:
-        dest: /root/tbrouwer-cloudflare-origin.cert
-        content: "{{ cloudflare_origin_cert }}"
-
-    - name: Ensure cloudflare origin key is on remote
-      copy:
-        dest: /root/tbrouwer-cloudflare-origin.key
-        content: "{{ cloudflare_origin_key }}"
-
-    - name: Ensure dashy config is on remote
-      ansible.builtin.template:
-        src: ./templates/dashy-conf.yaml.j2
-        dest: /root/dashy-conf.yaml
-        mode: "0644"
-
-    - name: Ensure traefik static config is on remote
-      ansible.builtin.template:
-        src: ./templates/traefik-static.yaml.j2
-        dest: /root/traefik-static.yaml
         mode: "0644"
 
 - name: Install Docker
@@ -69,25 +37,17 @@
     - vars-private.yaml
 
   tasks:
-    - name: Ensure docker GPG signing key is installed (Debian)
+    - name: Ensure docker GPG signing key is installed
       ansible.builtin.apt_key:
         url: "{{ docker_ce_deb_gpg }}"
         state: present
       when: ansible_os_family == "Debian"
 
-    - name: Ensure docker repository is added (Debian)
+    - name: Ensure docker repository is added
       ansible.builtin.apt_repository:
         repo: "{{ docker_ce_deb_repo }}"
         state: present
       when: ansible_os_family == "Debian"
-
-    - name: Ensure docker repository is added (RedHat)
-      ansible.builtin.yum_repository:
-        name: docker-ce
-        description: docker-ce repo
-        baseurl: "{{ docker_ce_centos_baseurl }}"
-        gpgkey: "{{ docker_ce_centos_gpg }}"
-      when: ansible_os_family == "RedHat"
 
     - name: Ensure docker tools are installed
       ansible.builtin.package:
@@ -116,6 +76,36 @@
     - vars-private.yaml
 
   tasks:
+    - name: Ensure traefik static config is on remote
+      ansible.builtin.template:
+        src: ./templates/traefik-static.yaml.j2
+        dest: /root/traefik-static.yaml
+        mode: "0644"
+
+    - name: Ensure traefik dynamic config is on remote
+      ansible.builtin.template:
+        src: ./templates/traefik-dynamic.yaml.j2
+        dest: /root/traefik-dynamic.yaml
+        mode: "0644"
+
+    - name: Ensure proxmox certificate is on remote
+      copy:
+        dest: /root/cert-proxmox.crt
+        content: "{{ cert_proxmox_backup }}"
+        mode: '0600'
+
+    - name: Ensure cloudflare origin certificate is on remote
+      copy:
+        dest: /root/tbrouwer-cloudflare-origin.cert
+        content: "{{ cloudflare_origin_cert }}"
+        mode: '0600'
+
+    - name: Ensure cloudflare origin key is on remote
+      copy:
+        dest: /root/tbrouwer-cloudflare-origin.key
+        content: "{{ cloudflare_origin_key }}"
+        mode: '0600'
+
     - name: Ensure Traefik reverse proxy Docker container is running
       community.docker.docker_container:
         name: traefik
@@ -123,25 +113,6 @@
         state: started
         command:
           - --configFile=/etc/traefik/static.yaml
-          # - --providers.docker=true
-          # - --providers.docker.exposedbydefault=false
-          # - --providers.docker.endpoint=unix:///var/run/docker.sock
-          # - --providers.file.filename=/etc/traefik/dynamic.yaml
-          # - --entryPoints.web.address=:80
-          # - --entryPoints.web.http.redirections.entryPoint.to=web-secure
-          # - --entryPoints.web.http.redirections.entryPoint.scheme=https
-          # - --entryPoints.web.http.redirections.entryPoint.permanent=true
-          # - --entryPoints.web-secure.address=:443
-          # - --entryPoints.web-secure.http.tls.options=default
-          # - --accessLog.filePath=/root/access.log
-          # - --accessLog.format=json
-          # - --accesslog.fields.headers.defaultmode=keep
-          # - --accesslog.fields.headers.names.x-request-id=keep
-          # - --metrics.influxDB2.address=http://192.168.178.103:8086
-          # - "--metrics.influxDB2.token={{ influxdb_secret }}"
-          # - --metrics.influxDB2.org=homelab
-          # - --metrics.influxDB2.bucket=traefik
-          # - --metrics.influxDB2.pushInterval=10s
         ports:
           - "443:443"
           - "8080:8080"
@@ -181,6 +152,7 @@
           traefik.http.routers.portainer.entrypoints: "web-secure"
           traefik.http.routers.portainer.service: "portainer"
           traefik.http.routers.portainer.tls: "true"
+          traefik.http.routers.portainer.middlewares: authelia@file
           traefik.http.services.portainer.loadbalancer.server.port: "9000"
         restart_policy: unless-stopped
         networks:
@@ -196,6 +168,12 @@
     - vars-private.yaml
 
   tasks:
+    - name: Ensure dashy config is on remote
+      ansible.builtin.template:
+        src: ./templates/dashy-conf.yaml.j2
+        dest: /root/dashy-conf.yaml
+        mode: "0644"
+
     - name: Ensure Dashy Docker container is running
       community.docker.docker_container:
         name: dashy
@@ -284,13 +262,14 @@
       community.docker.docker_container:
         name: grafana
         image: grafana/grafana-enterprise:latest
-        # ports:
-        #   - "3000:3000"
+        ports:
+          - "3000:3000"
         labels:
           traefik.enable: "true"
           traefik.http.routers.grafana.rule: "Host(`grafana.{{ root_domain }}`)"
           traefik.http.routers.grafana.entrypoints: "web-secure"
           traefik.http.routers.grafana.tls: "true"
+          traefik.http.routers.grafana.middlewares: authelia@file
           traefik.http.services.grafana.loadbalancer.server.port: "3000"
         networks:
           - name: web-secure
@@ -346,15 +325,14 @@
       community.docker.docker_container:
         name: passbolt
         image: passbolt/passbolt:latest
-        command:
-          [
-            "/usr/bin/wait-for.sh",
-            "-t",
-            "0",
-            "192.168.178.103:3306",
-            "--",
-            "/docker-entrypoint.sh",
-          ]
+        command: [
+          "/usr/bin/wait-for.sh",
+          "-t",
+          "0",
+          "192.168.178.103:3306",
+          "--",
+          "/docker-entrypoint.sh"
+        ]
         env:
           APP_FULL_BASE_URL: "https://passbolt.{{ root_domain }}"
           DATASOURCES_DEFAULT_HOST: "192.168.178.103"
@@ -377,9 +355,8 @@
           traefik.http.routers.passbolt.rule: "Host(`passbolt.{{ root_domain }}`)"
           traefik.http.routers.passbolt.entrypoints: "web-secure"
           traefik.http.routers.passbolt.tls: "true"
-        # ports:
-        #   - 80:80
-        #   - 443:443
+        ports:
+          - 4080:80
         networks:
           - name: web-secure
 
@@ -396,7 +373,7 @@
         msg: "{{ passbolt_result.stdout }}"
       when: "'Username: The username is already in use' not in passbolt_result.stdout"
 
-- name: Install watchtower container
+- name: Install Watchtower container
   hosts: all
 
   tasks:
@@ -406,7 +383,77 @@
         image: containrrr/watchtower:latest
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
-          - /root/.docker/config.json:/config.json
         ports:
           - "3080:3080"
         restart_policy: unless-stopped
+
+- name: Install Authelia container
+  hosts: all
+
+  vars_files:
+    - vars-private.yaml
+
+  tasks:
+    - name: Ensure authelia config is on remote
+      ansible.builtin.template:
+        src: ./templates/authelia-config.yaml.j2
+        dest: /root/authelia-config/configuration.yaml
+        mode: "0644"
+
+    - name: Ensure authelia user database is on remote
+      ansible.builtin.template:
+        src: ./templates/authelia-user-database.yaml.j2
+        dest: /root/authelia-config/users_database.yaml
+        mode: "0644"
+
+    - name: Ensure authelia jwt secret is on remote
+      copy:
+        dest: /root/authelia-config/authelia_jwt_secret.key
+        content: "{{ authelia_jwt_secret }}"
+        mode: '0600'
+
+    - name: Ensure authelia session secret is on remote
+      copy:
+        dest: /root/authelia-config/authelia_session_secret.key
+        content: "{{ authelia_session_secret }}"
+        mode: '0600'
+
+    - name: Ensure authelia storage secret is on remote
+      copy:
+        dest: /root/authelia-config/authelia_storage_secret.key
+        content: "{{ authelia_storage_secret }}"
+        mode: '0600'
+
+    - name: Ensure authelia smtp password is on remote
+      copy:
+        dest: /root/authelia-config/smtp_password.password
+        content: "{{ smtp_password }}"
+        mode: '0600'
+
+    - name: Ensure Authelia Docker container is running
+      community.docker.docker_container:
+        name: authelia
+        image: authelia/authelia:latest
+        volumes:
+          - /root/authelia-config:/config
+        command:
+          - "authelia"
+          - "--config=/config/configuration.yaml"
+        env:
+          AUTHELIA_JWT_SECRET_FILE: /config/authelia_jwt_secret.key
+          AUTHELIA_SESSION_SECRET_FILE: /config/authelia_session_secret.key
+          AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /config/authelia_storage_secret.key
+          AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /config/smtp_password.password
+        restart_policy: unless-stopped
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.authelia.rule: "Host(`authelia.{{ root_domain }}`)"
+          traefik.http.routers.authelia.entrypoints: "web-secure"
+          traefik.http.routers.authelia.tls: "true"
+          traefik.http.services.authelia.loadbalancer.server.port: "9091"
+        networks:
+          - name: web-secure
+        healthcheck:
+              test: ["NONE"]
+
+

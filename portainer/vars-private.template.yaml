@@ -29,8 +29,17 @@ cloudflare_origin_key:
   -----BEGIN PRIVATE KEY-----
 
 dashy_description: ---REDACTED---
-dashy_domain: ---REDACTED---
 dashy_github: ---REDACTED---
 dashy_linkedin: ---REDACTED---
 dashy_docker: ---REDACTED---
 dashy_npm: ---REDACTED---
+
+authelia_jwt_secret: ---REDACTED---
+authelia_session_secret: ---REDACTED---
+authelia_storage_secret: ---REDACTED---
+authelia_email: ---REDACTED---
+
+authelia_user_name: ---REDACTED---
+authelia_user_display: ---REDACTED---
+authelia_user_pass: ---REDACTED---
+authelia_user_email: ---REDACTED---
