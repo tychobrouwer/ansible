@@ -123,15 +123,6 @@ http:
       service: jellyfin
       tls: {}
 
-    accontroller:
-      entryPoints:
-        - web-secure
-      rule: "Host(`accontroller.{{ root_domain }}`)"
-      middlewares:
-        - authelia
-      service: accontroller
-      tls: {}
-
   services:
     pve:
       loadBalancer:
@@ -184,11 +175,6 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.178.111:8096/"
-
-    accontroller:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.178.121:5001/"
 
   middlewares:
     addprefix-pihole:

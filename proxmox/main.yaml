@@ -169,6 +169,11 @@
         path: /mnt/data2/pbs-dumps
         state: directory
 
+    - name: Ensure backups folder exists
+      ansible.builtin.file:
+        path: /mnt/data2/backups
+        state: directory
+
 - name: Create share/ SMB users and folders
   hosts: all
 

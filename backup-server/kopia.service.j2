@@ -1,0 +1,12 @@
+[Unit]
+Description=Kopia server service
+After=network.target
+
+[Service]
+User=root
+Type=simple
+Restart=always
+ExecStart=kopia server start --tls-cert-file /root/kopia.cert --tls-key-file /root/kopia.key --address "0.0.0.0:51515" --server-control-username control --server-control-password {{ kopia_server_pass }}
+
+[Install]
+WantedBy=multi-user.target

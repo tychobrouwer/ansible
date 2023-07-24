@@ -2,3 +2,7 @@
 pbsuser_name: pbsuser
 pbs_apt_repo: deb http://download.proxmox.com/debian/pbs bullseye pbs-no-subscription
 pbs_gpg_key: http://download.proxmox.com/debian/proxmox-release-bullseye.gpg
+
+kopia_apt_repo: deb http://packages.kopia.io/apt/ stable main
+kopia_gpg_key: https://kopia.io/signing-key
+kopia_path: /mnt/backups

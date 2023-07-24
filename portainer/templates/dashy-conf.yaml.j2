@@ -102,17 +102,17 @@ sections:
         statusCheck: true
         statusCheckUrl: http://192.168.178.102:10086
 
-      - title: Portainer
-        icon: hl-portainer
-        url: https://portainer.{{ root_domain }}/#!/2/docker/containers
-        statusCheck: true
-        statusCheckUrl: http://192.168.178.103:9000
-
       - title: Jellyfin
         url: https://jellyfin.{{ root_domain }}/web/index.html#!/home.html
         icon: hl-jellyfin
         statusCheck: true
         statusCheckUrl: http://192.168.178.111:8096
+
+      - title: Portainer
+        icon: hl-portainer
+        url: https://portainer.{{ root_domain }}/#!/2/docker/containers
+        statusCheck: true
+        statusCheckUrl: http://192.168.178.103:9000
 
       - title: Sonarr
         url: https://sonarr.{{ root_domain }}/

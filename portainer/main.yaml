@@ -237,6 +237,8 @@
         volumes:
           - influxdb_data:/var/lib/influxdb
         restart_policy: unless-stopped
+        networks:
+          - name: web-secure
 
 - name: Install Grafana container
   hosts: all
@@ -383,6 +385,8 @@
         image: containrrr/watchtower:latest
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+        env:
+          WATCHTOWER_CLEANUP: "true"
         ports:
           - "3080:3080"
         restart_policy: unless-stopped
@@ -455,5 +459,3 @@
           - name: web-secure
         healthcheck:
               test: ["NONE"]
-
-
