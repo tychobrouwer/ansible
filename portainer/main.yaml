@@ -293,7 +293,7 @@
 
     - name: Ensure Passbolt database Docker container is running
       community.docker.docker_container:
-        name: mariadb
+        name: mariadb-passbolt
         image: mariadb:10.3
         labels:
           watchtower.enable: "false"

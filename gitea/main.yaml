@@ -1,0 +1,70 @@
+---
+- name: Initiate server
+  hosts: gitea_server
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  pre_tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure packages are updated
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
+  tasks:
+    - name: Add gitea git user
+      ansible.builtin.user:
+        name: git
+        home: /home/git
+        system: true
+        shell: /bin/bash
+        password: "!"
+        comment: Git Version Control
+
+    - name: Install gitea and database packages
+      ansible.builtin.package:
+        name:
+          - gitea
+          - postgresql
+          - postgresql-contrib
+        state: latest
+
+    - name: Set postgresql password encryption
+      community.postgresql.postgresql_set:
+        name: password_encryption
+        value: scram-sha-256
+
+    - name: Create the gitea database user
+      community.postgresql.postgresql_user:
+        name: "{{ gitea_database_user }}"
+        password: "{{ gitea_database_password }}"
+
+    - name: Create the gitea database
+      community.postgresql.postgresql_db:
+        name: "{{ gitea_database }}"
+        encoding: UTF-8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+        template: template0
+        owner: "{{ gitea_database_user }}"
+
+    - name: Grant gitea user access to database
+      community.postgresql.postgresql_pg_hba:
+        dest: /var/lib/postgres/data/pg_hba.conf
+        contype: local
+        users: "{{ gitea_database_user }}"
+        databases: "{{ gitea_database }}"
+        method: scram-sha-256
+        create: true
+
+    - name: Connect to database
+      community.postgresql.postgresql_user:
+        db: "{{ gitea_database }}"
+        name: "{{ gitea_database_user }}"
