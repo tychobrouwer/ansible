@@ -4,7 +4,7 @@ PartOf=gitea.service
 
 [Socket]
 Service=gitea.service
-ListenStream=<some_port>
+ListenStream=3001
 NoDelay=true
 
 [Install]
