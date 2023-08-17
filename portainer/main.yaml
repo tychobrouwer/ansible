@@ -235,7 +235,7 @@
           DOCKER_INFLUXDB_INIT_BUCKET: proxmox
           DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "{{ influxdb_secret }}"
         volumes:
-          - influxdb_data:/var/lib/influxdb
+          - influxdb_data:/var/lib/influxdb2
         restart_policy: unless-stopped
         networks:
           - name: web-secure
