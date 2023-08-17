@@ -216,9 +216,13 @@
     - vars-private.yaml
 
   tasks:
-    - name: Ensure InfluxDB Docker volume is present
+    - name: Ensure InfluxDB Docker data volume is present
       community.docker.docker_volume:
         name: influxdb_data
+
+    - name: Ensure InfluxDB Docker config volume is present
+      community.docker.docker_volume:
+        name: influxdb_config
 
     - name: Ensure InfluxDB Docker container is running
       community.docker.docker_container:
@@ -236,6 +240,7 @@
           DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "{{ influxdb_secret }}"
         volumes:
           - influxdb_data:/var/lib/influxdb2
+          - influxdb_config:/etc/influxdb2
         restart_policy: unless-stopped
         networks:
           - name: web-secure
