@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: retropie
+  hosts: gitea_server
 
   vars_files:
     - vars.yaml

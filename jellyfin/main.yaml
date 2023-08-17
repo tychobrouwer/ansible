@@ -6,56 +6,24 @@
     - vars.yaml
     - vars-private.yaml
 
-  vars:
-    xz_package: xz-utils
-    libicu_package: libicu-dev
-
   pre_tasks:
-    - name: Overwrite vars for Red Hat
-      set_fact:
-        xz_package: xz
-        libicu_package: libicu
-      when: ansible_os_family == "RedHat"
-
-    - name: Update cache if needed (Debian)
+    - name: Update cache if needed
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
-      when: ansible_os_family == "Debian"
 
     - name: Update packages
       ansible.builtin.package:
         name: "*"
         state: latest
 
-    - name: Ensure required packages are installed (Debian)
+    - name: Ensure required packages are installed
       ansible.builtin.package:
         name:
-          - "{{ xz_package }}"
-          - "{{ libicu_package }}"
+          - xz-utils
+          - libicu-dev
         state: present
-
-    - name: Ensure required packages are installed (RedHat)
-      ansible.builtin.package:
-        name:
-          - epel-release
-        state: present
-      when: ansible_os_family == "RedHat"
-
-    - name: Ensure RPM Fusion is installed (RedHat)
-      ansible.builtin.yum:
-        name:
-          - "{{ rpmfusion_free_repo }}"
-          - "{{ rpmfusion_nonfree_repo }}"
-        disable_gpg_check: true
-        state: present
-      when: ansible_os_family == "RedHat"
-
-    - name: Ensure powertools repository is enabled (RedHat)
-      ansible.builtin.command: yum config-manager --set-enabled powertools
-      changed_when: false
-      when: ansible_os_family == "RedHat"
-
+  
   tasks:
     - name: Ensure share group exists
       ansible.builtin.group:

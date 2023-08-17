@@ -28,23 +28,44 @@
         password: "!"
         comment: Git Version Control
 
+    - name: Ensure gitea GPG signing key is installed
+      ansible.builtin.apt_key:
+        url: "{{ gitea_deb_gpg }}"
+        state: present
+
+    - name: Ensure gitea repository is added
+      ansible.builtin.apt_repository:
+        repo: "{{ gitea_deb_repo }}"
+        state: present
+
     - name: Install gitea and database packages
       ansible.builtin.package:
         name:
+          - git
           - gitea
           - postgresql
           - postgresql-contrib
         state: latest
 
     - name: Set postgresql password encryption
-      community.postgresql.postgresql_set:
-        name: password_encryption
-        value: scram-sha-256
+      ansible.builtin.lineinfile:
+        path: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+        regexp: '^password_encryption = '
+        insertafter: '^#password_encryption = '
+        line: password_encryption = scram-sha-256
 
     - name: Create the gitea database user
       community.postgresql.postgresql_user:
-        name: "{{ gitea_database_user }}"
-        password: "{{ gitea_database_password }}"
+        name: "{{ gitea_db_user }}"
+        password: "{{ gitea_db_user_password }}"
+      become: yes
+      become_user: postgres
+      become_method: su
+
+    - name: Ensure a locale exists
+      community.general.locale_gen:
+        name: en_US.UTF-8
+        state: present
 
     - name: Create the gitea database
       community.postgresql.postgresql_db:
@@ -53,13 +74,16 @@
         lc_collate: en_US.UTF-8
         lc_ctype: en_US.UTF-8
         template: template0
-        owner: "{{ gitea_database_user }}"
+        owner: "{{ gitea_db_user }}"
+      become: yes
+      become_user: postgres
+      become_method: su
 
     - name: Grant gitea user access to database
       community.postgresql.postgresql_pg_hba:
-        dest: /var/lib/postgres/data/pg_hba.conf
+        dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
         contype: local
-        users: "{{ gitea_database_user }}"
+        users: "{{ gitea_db_user }}"
         databases: "{{ gitea_database }}"
         method: scram-sha-256
         create: true
@@ -67,4 +91,7 @@
     - name: Connect to database
       community.postgresql.postgresql_user:
         db: "{{ gitea_database }}"
-        name: "{{ gitea_database_user }}"
+        name: "{{ gitea_db_user }}"
+      become: yes
+      become_user: postgres
+      become_method: su

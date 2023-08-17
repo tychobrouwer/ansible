@@ -41,13 +41,11 @@
       ansible.builtin.apt_key:
         url: "{{ docker_ce_deb_gpg }}"
         state: present
-      when: ansible_os_family == "Debian"
 
     - name: Ensure docker repository is added
       ansible.builtin.apt_repository:
         repo: "{{ docker_ce_deb_repo }}"
         state: present
-      when: ansible_os_family == "Debian"
 
     - name: Ensure docker tools are installed
       ansible.builtin.package:
