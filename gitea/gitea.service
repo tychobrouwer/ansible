@@ -7,35 +7,18 @@ Wants=postgresql.service
 After=gitea.main.socket
 Requires=gitea.main.socket
 
-# An example of /etc/systemd/system/gitea.main.socket
-###
-##
-## [Unit]
-## Description=Gitea Web Socket
-## PartOf=gitea.service
-##
-## [Socket]
-## Service=gitea.service
-## ListenStream=<some_port>
-## NoDelay=true
-##
-## [Install]
-## WantedBy=sockets.target
-##
-###
-
 [Service]
 # Uncomment the next line if you have repos with lots of files and get a HTTP 500 error because of that
 # LimitNOFILE=524288:524288
 RestartSec=2s
 Type=notify
-User=git
-Group=git
+User=gitea
+Group=gitea
 WorkingDirectory=/var/lib/gitea/
 RuntimeDirectory=gitea
-ExecStart=/usr/local/bin/gitea web --port 3000 --config /etc/gitea/app.ini
+ExecStart=/usr/bin/gitea web --port 3000
 Restart=always
-Environment=USER=git HOME=/home/git GITEA_WORK_DIR=/var/lib/gitea
+Environment=USER=gitea HOME=/home/gitea GITEA_WORK_DIR=/var/lib/gitea
 WatchdogSec=30s
 
 [Install]

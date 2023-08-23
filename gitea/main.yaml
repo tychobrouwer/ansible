@@ -21,12 +21,28 @@
   tasks:
     - name: Add gitea git user
       ansible.builtin.user:
-        name: git
-        home: /home/git
+        name: gitea
+        home: /home/gitea
         system: true
         shell: /bin/bash
         password: "!"
         comment: Git Version Control
+
+    - name: Ensure repositories directory exists
+      ansible.builtin.file:
+        path: /home/gitea/repositories
+        state: directory
+        owner: gitea
+        group: gitea
+        mode: 0755
+
+    - name: Ensure LFS directory exists
+      ansible.builtin.file:
+        path: /home/gitea/lfs
+        state: directory
+        owner: gitea
+        group: gitea
+        mode: 0755
 
     - name: Ensure gitea GPG signing key is installed
       ansible.builtin.apt_key:
@@ -50,8 +66,8 @@
     - name: Set postgresql password encryption
       ansible.builtin.lineinfile:
         path: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
-        regexp: '^password_encryption = '
-        insertafter: '^#password_encryption = '
+        regexp: "^password_encryption = "
+        insertafter: "^#password_encryption = "
         line: password_encryption = scram-sha-256
 
     - name: Create the gitea database user
@@ -95,3 +111,33 @@
       become: yes
       become_user: postgres
       become_method: su
+
+    - name: Ensure gitea configuration file exists
+      ansible.builtin.template:
+        src: gitea-app.ini.j2
+        dest: /var/lib/gitea/custom/conf/app.ini
+        mode: 0644
+
+    - name: Ensure gitea service is present
+      ansible.builtin.copy:
+        src: gitea.service
+        dest: /etc/systemd/system/gitea.service
+        mode: 0644
+
+    - name: Ensure gitea service socket is present
+      ansible.builtin.copy:
+        src: gitea.main.socket
+        dest: /etc/systemd/system/gitea.main.socket
+        mode: 0644
+
+    - name: Ensure gitea socket is enabled and running
+      ansible.builtin.service:
+        name: gitea.main.socket
+        state: started
+        enabled: yes
+
+    - name: Ensure gitea service is enabled and running
+      ansible.builtin.service:
+        name: gitea
+        state: started
+        enabled: yes
