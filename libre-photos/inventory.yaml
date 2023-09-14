@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    libre_photos:
+      ansible_host: 192.168.178.110
+  vars:
+    ansible_user: root

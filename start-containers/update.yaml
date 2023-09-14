@@ -1,6 +1,7 @@
 ---
 - name: Ensure containers are updated
   hosts:
+    - proxmox
     - infrastructure
     - entertainment
     - projects

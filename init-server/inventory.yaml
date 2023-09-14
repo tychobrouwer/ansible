@@ -26,6 +26,8 @@ all:
           ansible_host: 192.168.178.109
     entertainment:
       hosts:
+        libre_photos:
+          ansible_host: 192.168.178.110
         jellyfin:
           ansible_host: 192.168.178.111
         factorio:
@@ -34,8 +36,6 @@ all:
           ansible_host: 192.168.178.113
         ark_survival:
           ansible_host: 192.168.178.114
-        retropie:
-          ansible_host: 192.168.178.116
     projects:
       hosts:
         accontroller:

@@ -1,6 +1,6 @@
 ---
 - name: Initiate server
-  hosts: gitea_server
+  hosts: libre_photos
 
   vars_files:
     - vars.yaml
@@ -32,6 +32,7 @@
           - git
           - python3
           - python3-pip
+          - python3-psycopg2
           - openssh-server
           - net-tools
         state: present

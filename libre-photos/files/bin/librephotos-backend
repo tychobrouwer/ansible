@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+cd /usr/lib/librephotos/backend
+
+if [[ "$(uname -m)" == "aarch64"* ]]; then
+  export OPENBLAS_CORETYPE=ARMV8
+  echo "ARM architecture detected. OPENBLAS_CORETYPE set to ARMV8"
+fi
+export OPENBLAS_NUM_THREADS=1 
+export OPENBLAS_MAIN_FREE=1
+
+if [ -n "$SECRET_KEY" ]
+then
+    echo "Use env SECRET_KEY"
+else 
+    if [ -f $BASE_LOGS/secret.key ]
+    then
+        echo "Use existing secret.key"
+        SECRET_KEY=`cat $BASE_LOGS/secret.key`
+        export SECRET_KEY=$SECRET_KEY
+    else
+        echo "Create new secret.key"
+        SECRET_KEY=$(python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+        echo $SECRET_KEY > $BASE_LOGS/secret.key
+        export SECRET_KEY=$SECRET_KEY
+    fi
+fi
+
+python3 manage.py showmigrations | tee $BASE_LOGS/show_migrate.log
+python3 manage.py migrate | tee $BASE_LOGS/command_migrate.log
+python3 manage.py showmigrations | tee $BASE_LOGS/show_migrate.log
+python3 manage.py collectstatic --no-input
+python3 manage.py clear_cache 
+python3 manage.py build_similarity_index 2>&1 | tee $BASE_LOGS/command_build_similarity_index.log
+python3 manage.py qcluster 2>&1 | tee $BASE_LOGS/qcluster.log &
+
+echo "production backend starting"
+gunicorn --workers=2 --worker-class=gevent --timeout 3600 --bind 127.0.0.1:8001 --log-level=info ownphotos.wsgi 2>&1 | tee $BASE_LOGS/gunicorn_django.log
+

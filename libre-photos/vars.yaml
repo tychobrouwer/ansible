@@ -1,0 +1,80 @@
+---
+postgresql_debian_repository_key_url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+postgresql_debian_repository: deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main
+
+postgresql_version: 13
+
+# the location of photos. If changed here, also must change the path in the nginx virtual host.
+# /etc/nginx
+PHOTOS: /share/media
+BASE_DATA: /var/lib/librephotos/data
+BASE_LOGS: /var/log/librephotos
+
+# Front-end’s IPs from which allowed to handle set secure headers. (comma separate).
+# Ref: https://docs.gunicorn.org/en/stable/settings.html#forwarded-allow-ips
+# Ref2: https://github.com/benoitc/gunicorn/issues/1857
+# '*' to disable
+FORWARDED_ALLOW_IPS:
+
+# PostgreSQL connection settings
+DB_HOST: localhost
+# DB_USER Must match DB_USER in resources /etc/librephotos/librephotos-backend.env
+# and not be used by other installed software. This user will be removed and recreated.
+DB_PORT: 5432
+DB_USER: librephotos
+
+libvips_version: 8.11.4
+libvips_url: https://github.com/libvips/libvips/releases/download/v{{ libvips_version }}/vips-{{ libvips_version }}.tar.gz
+
+services:
+  - librephotos-worker
+  - librephotos-backend
+  - librephotos-image-similarity
+  - librephotos-thumbnail
+
+dependencies:
+  - wget
+  - gnupg
+  - gnupg1
+  - gnupg2
+  - lsb-release
+  - swig
+  - ffmpeg
+  - libimage-exiftool-perl
+  - libpq-dev
+  - curl
+  - libopenblas-dev
+  - libmagic1
+  - libboost-all-dev
+  - libxrender-dev
+  - liblapack-dev
+  - git
+  - bzip2
+  - cmake
+  - build-essential
+  - libsm6
+  - libglib2.0-0
+  - libgl1-mesa-glx
+  - gfortran
+  - gunicorn
+  - libheif-dev
+  - libssl-dev
+  - rustc
+  - liblzma-dev
+  - python3
+  - python3-pip
+  - python3-venv
+  - imagemagick
+  - pkg-config
+  - libglib2.0-dev
+  - libexpat1-dev
+  - libgsf-1-dev
+  - liborc-dev
+  - libexif-dev
+  - libtiff-dev
+  - librsvg2-dev
+  - libpng-dev
+  - libwebp-dev
+  - libjpeg62-turbo-dev
+  - libmagick++-dev
+  - xsel
