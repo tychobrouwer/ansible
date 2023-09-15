@@ -183,21 +183,18 @@
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/places365.tar.gz
         dest: "{{ BASE_DATA }}/data_models/places365"
         remote_src: yes
-        creates: "{{ BASE_DATA }}/data_models/places365"
 
     - name: get im2txt model
       ansible.builtin.unarchive:
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/im2txt.tar.gz
         dest: "{{ BASE_DATA }}/data_models/im2txt"
         remote_src: yes
-        creates: "{{ BASE_DATA }}/data_models/im2txt"
 
     - name: get clip-embeddings model
       ansible.builtin.unarchive:
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/clip-embeddings.tar.gz
         dest: "{{ BASE_DATA }}/data_models/clip-embeddings"
         remote_src: yes
-        creates: "{{ BASE_DATA }}/data_models/clip-embeddings"
 
     - name: Create cache directory
       ansible.builtin.file:
@@ -289,7 +286,7 @@
     - name: Copy systemd files to remote
       ansible.builtin.copy:
         src: ./files/systemd/
-        dest: /etc/systemd/
+        dest: /etc/systemd/system/
         mode: 0755
 
     ####################### TESTED TILL HERE ############################
