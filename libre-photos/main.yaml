@@ -57,6 +57,31 @@
         state: present
       loop: "{{ dependencies }}"
 
+    - name: Ensure share group exists
+      ansible.builtin.group:
+        name: shareuser
+        gid: 3510
+        state: present
+
+    - name: Ensure share user exists
+      ansible.builtin.user:
+        name: shareuser
+        group: shareuser
+        uid: 1010
+        state: present
+
+    - name: Ensure librephotos is in share permissions
+      ansible.builtin.user:
+        name: "librephotos"
+        groups: shareuser
+        state: present
+
+    - name: Ensure share folder exists
+      ansible.builtin.file:
+        path: /share
+        state: directory
+        mode: "0775"
+
 - name: Install and configure postgresql
   hosts: all
 
@@ -181,19 +206,19 @@
     - name: get places365 model
       ansible.builtin.unarchive:
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/places365.tar.gz
-        dest: "{{ BASE_DATA }}/data_models/places365"
+        dest: "{{ BASE_DATA }}/data_models"
         remote_src: yes
 
     - name: get im2txt model
       ansible.builtin.unarchive:
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/im2txt.tar.gz
-        dest: "{{ BASE_DATA }}/data_models/im2txt"
+        dest: "{{ BASE_DATA }}/data_models"
         remote_src: yes
 
     - name: get clip-embeddings model
       ansible.builtin.unarchive:
         src: https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/clip-embeddings.tar.gz
-        dest: "{{ BASE_DATA }}/data_models/clip-embeddings"
+        dest: "{{ BASE_DATA }}/data_models"
         remote_src: yes
 
     - name: Create cache directory
@@ -209,32 +234,22 @@
         url: https://download.pytorch.org/models/resnet152-b121ed2d.pth
         dest: /usr/lib/librephotos/.cache/torch/hub/checkpoints/resnet152-b121ed2d.pth
 
-    - name: create Python virtual environment
-      ansible.builtin.command: python3 -m venv /usr/lib/librephotos/.local
-      changed_when: false
-
-    - name: Add virtual environment to .bach
-      ansible.builtin.lineinfile:
-        path: /usr/lib/librephotos/.bashrc
-        regexp: "^export PATH=/usr/lib/librephotos/.local:$PATH"
-        line: export PATH=/usr/lib/librephotos/.local:$PATH
-
     - name: install torch python libraries
       ansible.builtin.pip:
         name:
           - torch
           - torchvision
-        extra_args: --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu --break-system-packages
+        extra_args: --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu --break-system-packages --no-cache-dir
 
     - name: install dlib python library
       ansible.builtin.pip:
         name: dlib
-        extra_args: -v --install-option="--no" --install-option="DLIB_USE_CUDA" --break-system-packages
+        extra_args: -v --install-option="--no" --install-option="DLIB_USE_CUDA" --break-system-packages --no-cache-dir
 
     - name: install pyvips python library
       ansible.builtin.pip:
         name: pyvips
-        extra_args: --break-system-packages
+        extra_args: --break-system-packages --no-cache-dir
 
     - name: get librephotos backend
       ansible.builtin.git:
@@ -244,7 +259,11 @@
     - name: install librephotos python requirements
       ansible.builtin.pip:
         requirements: /usr/lib/librephotos/backend/requirements.txt
-        extra_args: --break-system-packages
+        extra_args: --break-system-packages --no-cache-dir
+
+    - name: Remove pip cache
+      ansible.builtin.command: pip cache purge
+      changed_when: false
 
 - name: Post install backend configuration
   hosts: all
@@ -289,8 +308,6 @@
         dest: /etc/systemd/system/
         mode: 0755
 
-    ####################### TESTED TILL HERE ############################
-
     - name: Reload systemd
       ansible.builtin.command: systemctl daemon-reload
       changed_when: false
@@ -310,13 +327,12 @@
     - vars-private.yaml
 
   tasks:
-    - name: Prepare to install node 14
-      ansible.builtin.command: curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
-      changed_when: false
-
-    - name: Install node 14
+    - name: Install nodejs and npm
       ansible.builtin.apt:
-        name: nodejs
+        name:
+          - nodejs
+          - npm
+        install_recommends: false
         state: present
 
     - name: Install yarn node package
@@ -341,26 +357,28 @@
       ansible.builtin.git:
         repo: https://github.com/LibrePhotos/librephotos-frontend.git
         dest: /usr/lib/librephotos/frontend
-        owner: librephotos
-        group: librephotos
+        update: false
 
     - name: Install librephotos frontend dependencies
-      ansible.builtin.npm:
-        path: /usr/lib/librephotos/frontend
-        state: present
+      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm install --legacy-peer-deps
+      changed_when: false
 
     - name: Run postinstall npm script
-      ansible.builtin.command: cd /usr/lib/librephotos/frontend && npm run postinstall
+      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run postinstall
       changed_when: false
 
     - name: Build frontend
-      ansible.builtin.command: cd /usr/lib/librephotos/frontend && npm run build
+      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run build
       changed_when: false
 
     - name: Install serve node package
       ansible.builtin.npm:
         name: serve
         path: /usr/lib/librephotos/frontend
+
+    - name: Clean npm cache
+      ansible.builtin.command: npm cache clean --force
+      changed_when: false
 
 - name: Post install librephotos frontend
   hosts: all
@@ -370,13 +388,25 @@
     - vars-private.yaml
 
   tasks:
+    - name: Set ownership frontend folder
+      ansible.builtin.file:
+        path: /usr/lib/librephotos/frontend
+        owner: librephotos
+        group: librephotos
+        recurse: yes
+
+    - name: Delete frontend node_modules
+      ansible.builtin.file:
+        path: /usr/lib/librephotos/frontend/node_modules
+        state: absent
+
     - name: Enable and start frontend service
       ansible.builtin.service:
         name: librephotos-frontend
         enabled: yes
         state: started
 
-- name: Install nginx
+- name: Install and configure nginx
   hosts: all
 
   vars_files:
@@ -384,18 +414,12 @@
     - vars-private.yaml
 
   tasks:
-    - name: install nginx
+    - name: Install nginx
       ansible.builtin.apt:
         name: nginx
         state: present
 
-    - name: Copy nginx files to remote
-      ansible.builtin.copy:
-        src: files/etc/nginx/nginx.conf
-        dest: /etc/nginx/nginx.conf
-        mode: 0755
-
-    - name: restart nginx
+    - name: Reload nginx
       ansible.builtin.service:
         name: nginx
-        state: restarted
+        state: reloaded

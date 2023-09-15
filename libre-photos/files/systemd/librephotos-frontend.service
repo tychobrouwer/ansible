@@ -1,6 +1,10 @@
 [Unit]
 Description=librephotos-frontend
+
 [Service]
+User=librephotos
+Group=librephotos 
 ExecStart=/usr/lib/librephotos/bin/librephotos-frontend
+
 [Install]
 WantedBy=multi-user.target
