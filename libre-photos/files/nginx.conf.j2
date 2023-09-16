@@ -32,27 +32,27 @@ http {
     location /protected_media  {
       internal;
       # The begining of the path must be same like in the installation script BASE_DATA
-      alias /var/lib/librephotos/data/protected_media/;
+      alias {{ BASE_DATA }}/protected_media/;
     }
 
     location /data  {
       internal;
       # The begining of the path must be same like in the installation script PHOTOS
-      alias /var/lib/librephotos/photos/;
+      alias {{ PHOTOS }}/;
     }
 
     # Original Photos
     location /original  {
       internal;
       # The begining of the path must be same like in the installation script PHOTOS
-      alias /var/lib/librephotos/photos/;
+      alias {{ PHOTOS }}/;
     }
 
     # Nextcloud Original Photos
     location /nextcloud_original  {
       internal;
       # The begining of the path must be same like in the installation script BASE_DATA
-      alias /var/lib/librephotos/data/nextcloud_media/;
+      alias {{ BASE_DATA }}/nextcloud_media/;
     }
   }
 }

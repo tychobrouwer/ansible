@@ -141,54 +141,54 @@
         method: scram-sha-256
         create: true
 
-- name: Compile libvips from source
-  hosts: all
+# - name: Compile libvips from source
+#   hosts: all
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
+#   vars_files:
+#     - vars.yaml
+#     - vars-private.yaml
 
-  tasks:
-    - name: Download libvips
-      ansible.builtin.get_url:
-        url: "{{ libvips_url }}"
-        dest: /tmp/vips-{{ libvips_version }}.tar.gz
-        mode: "0644"
+#   tasks:
+#     - name: Download libvips
+#       ansible.builtin.get_url:
+#         url: "{{ libvips_url }}"
+#         dest: /tmp/vips-{{ libvips_version }}.tar.gz
+#         mode: "0644"
 
-    - name: Extract libvips
-      ansible.builtin.unarchive:
-        src: /tmp/vips-{{ libvips_version }}.tar.gz
-        dest: /tmp
-        remote_src: yes
-        creates: /tmp/vips-{{ libvips_version }}
+#     - name: Extract libvips
+#       ansible.builtin.unarchive:
+#         src: /tmp/vips-{{ libvips_version }}.tar.gz
+#         dest: /tmp
+#         remote_src: yes
+#         creates: /tmp/vips-{{ libvips_version }}
 
-    # Maybe this should be run manually
-    - name: Configure libvips
-      ansible.builtin.command: cd /tmp/vips-{{ libvips_version }} && ./configure --with-magickpackage=ImageMagick
-      changed_when: false
-      failed_when: false
+#     # Maybe this should be run manually
+#     - name: Configure libvips
+#       ansible.builtin.command: cd /tmp/vips-{{ libvips_version }} && ./configure --with-magickpackage=ImageMagick
+#       changed_when: false
+#       failed_when: false
 
-    - name: Get number of cores
-      ansible.builtin.command: nproc --all
-      register: num_cores
-      changed_when: false
+#     - name: Get number of cores
+#       ansible.builtin.command: nproc --all
+#       register: num_cores
+#       changed_when: false
 
-    - name: Compile libvips with make
-      ansible.builtin.make:
-        chdir: /tmp/vips-{{ libvips_version }}
-        target: install
-        params:
-          NUM_THREADS: "{{ num_cores.stdout }}"
+#     - name: Compile libvips with make
+#       ansible.builtin.make:
+#         chdir: /tmp/vips-{{ libvips_version }}
+#         target: install
+#         params:
+#           NUM_THREADS: "{{ num_cores.stdout }}"
 
-    - name: Update shared library cache
-      ansible.builtin.command: ldconfig
-      changed_when: false
+#     - name: Update shared library cache
+#       ansible.builtin.command: ldconfig
+#       changed_when: false
 
-    - name: Add LD_LIBRARY_PATH to .bashrc
-      ansible.builtin.lineinfile:
-        path: /usr/lib/librephotos/.bashrc
-        regexp: "^export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib"
-        line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+#     - name: Add LD_LIBRARY_PATH to .bashrc
+#       ansible.builtin.lineinfile:
+#         path: /usr/lib/librephotos/.bashrc
+#         regexp: "^export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib"
+#         line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 - name: Install librephotos backend
   hosts: all
@@ -319,66 +319,66 @@
         state: started
       loop: "{{ services }}"
 
-- name: Install nodejs and yarn
-  hosts: all
+# - name: Install nodejs and yarn
+#   hosts: all
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
+#   vars_files:
+#     - vars.yaml
+#     - vars-private.yaml
 
-  tasks:
-    - name: Install nodejs and npm
-      ansible.builtin.apt:
-        name:
-          - nodejs
-          - npm
-        install_recommends: false
-        state: present
+#   tasks:
+#     - name: Install nodejs and npm
+#       ansible.builtin.apt:
+#         name:
+#           - nodejs
+#           - npm
+#         install_recommends: false
+#         state: present
 
-    - name: Install yarn node package
-      community.general.npm:
-        name: yarn
-        global: true
+#     - name: Install yarn node package
+#       community.general.npm:
+#         name: yarn
+#         global: true
 
-- name: Install librephotos frontend
-  hosts: all
+# - name: Install librephotos frontend
+#   hosts: all
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
+#   vars_files:
+#     - vars.yaml
+#     - vars-private.yaml
 
-  become: yes
-  become_user: librephotos
-  become_method: su
-  become_flags: "-s /usr/bin/bash"
+#   become: yes
+#   become_user: librephotos
+#   become_method: su
+#   become_flags: "-s /usr/bin/bash"
 
-  tasks:
-    - name: get librephotos frontend
-      ansible.builtin.git:
-        repo: https://github.com/LibrePhotos/librephotos-frontend.git
-        dest: /usr/lib/librephotos/frontend
-        update: false
+#   tasks:
+#     - name: get librephotos frontend
+#       ansible.builtin.git:
+#         repo: https://github.com/LibrePhotos/librephotos-frontend.git
+#         dest: /usr/lib/librephotos/frontend
+#         update: false
 
-    - name: Install librephotos frontend dependencies
-      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm install --legacy-peer-deps
-      changed_when: false
+#     - name: Install librephotos frontend dependencies
+#       ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm install --legacy-peer-deps
+#       changed_when: false
 
-    - name: Run postinstall npm script
-      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run postinstall
-      changed_when: false
+#     - name: Run postinstall npm script
+#       ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run postinstall
+#       changed_when: false
 
-    - name: Build frontend
-      ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run build
-      changed_when: false
+#     - name: Build frontend
+#       ansible.builtin.shell: cd /usr/lib/librephotos/frontend && npm run build
+#       changed_when: false
 
-    - name: Install serve node package
-      ansible.builtin.npm:
-        name: serve
-        path: /usr/lib/librephotos/frontend
+#     - name: Install serve node package
+#       ansible.builtin.npm:
+#         name: serve
+#         path: /usr/lib/librephotos/frontend
 
-    - name: Clean npm cache
-      ansible.builtin.command: npm cache clean --force
-      changed_when: false
+#     - name: Clean npm cache
+#       ansible.builtin.command: npm cache clean --force
+#       changed_when: false
 
 - name: Post install librephotos frontend
   hosts: all
@@ -395,11 +395,6 @@
         group: librephotos
         recurse: yes
 
-    - name: Delete frontend node_modules
-      ansible.builtin.file:
-        path: /usr/lib/librephotos/frontend/node_modules
-        state: absent
-
     - name: Enable and start frontend service
       ansible.builtin.service:
         name: librephotos-frontend
@@ -414,6 +409,12 @@
     - vars-private.yaml
 
   tasks:
+    - name: Copy nginx configuration
+      ansible.builtin.template:
+        src: ./files/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: 0755
+
     - name: Install nginx
       ansible.builtin.apt:
         name: nginx
