@@ -114,6 +114,12 @@ sections:
         statusCheck: true
         statusCheckUrl: http://192.168.178.103:9000
 
+      - title: LibrePhotos
+        icon: hl-librephotos
+        url: https://librephotos.{{ root_domain }}/
+        statusCheck: true
+        statusCheckUrl: http://192.168.178.110:80
+
       - title: Sonarr
         url: https://sonarr.{{ root_domain }}/
         icon: hl-sonarr
@@ -265,7 +271,7 @@ sections:
         icon: hl-bookstack
         url: http://library.tue.nl/AZDatabases/
 
-      - title: 4TC00 Manual
+      - title: 4TC00 Website
         icon: https://www.tue.nl/favicon-64.ico
         url: https://cstweb.wtb.tue.nl/4tc00/index.html
 
@@ -278,6 +284,12 @@ sections:
       - title: GitHub
         url: {{ dashy_github }}
         icon: hl-github-light
+
+      - title: Gitea
+        url: {{ dashy_gitea }}
+        icon: hl-gitea
+        statusCheck: true
+        statusCheckUrl: http://192.168.178.109:3000
 
       - title: Cloudflare
         url: https://dash.cloudflare.com/
@@ -309,4 +321,4 @@ sections:
 
       - title: Windows Blog
         url: https://blogs.windows.com/windows-insider/
-        icon: favicon
+        icon: hl-windows-11

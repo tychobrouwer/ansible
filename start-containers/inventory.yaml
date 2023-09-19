@@ -22,6 +22,10 @@ all:
           ansible_host: 192.168.178.107
         backup_server:
           ansible_host: 192.168.178.108
+        gitea_server:
+          ansible_host: 192.168.178.109
+        librephotos_server:
+          ansible_host: 192.168.178.110
     entertainment:
       hosts:
         jellyfin:

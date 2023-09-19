@@ -17,3 +17,44 @@
       ansible.builtin.package:
         name: "*"
         state: latest
+# - name: Update containers to Debian Buster
+#   hosts:
+#     - infrastructure
+#     - entertainment
+#     - projects
+
+#   tasks:
+#     - name: Replace bullseye with bookworm in sources.list
+#       ansible.builtin.replace:
+#         path: /etc/apt/sources.list
+#         regexp: "bullseye"
+#         replace: "bookworm"
+#         backup: yes
+
+#     - name: Set security url correctly
+#       ansible.builtin.replace:
+#         path: /etc/apt/sources.list
+#         regexp: "deb http://security.debian.org bookworm-security main contrib"
+#         replace: "deb http://security.debian.org/debian-security bookworm-security main contrib"
+#         backup: yes
+
+#     - name: Upgrade to bookworm
+#       ansible.builtin.apt:
+#         upgrade: dist
+#         update_cache: yes
+#         dpkg_options: force-confold
+
+#     - name: disable systemd-networkd-wait-online service
+#       ansible.builtin.systemd:
+#         name: systemd-networkd-wait-online.service
+#         enabled: no
+
+#     - name: Remove python managed externally file
+#       ansible.builtin.file:
+#         path: /usr/lib/python3.11/EXTERNALLY-MANAGED
+#         state: absent
+
+#     - name: Run apt autoremove with purge
+#       ansible.builtin.apt:
+#         autoremove: yes
+#         purge: yes

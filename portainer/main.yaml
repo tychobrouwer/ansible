@@ -90,19 +90,19 @@
       copy:
         dest: /root/cert-proxmox.crt
         content: "{{ cert_proxmox_backup }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure cloudflare origin certificate is on remote
       copy:
         dest: /root/tbrouwer-cloudflare-origin.cert
         content: "{{ cloudflare_origin_cert }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure cloudflare origin key is on remote
       copy:
         dest: /root/tbrouwer-cloudflare-origin.key
         content: "{{ cloudflare_origin_key }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure Traefik reverse proxy Docker container is running
       community.docker.docker_container:
@@ -330,14 +330,15 @@
       community.docker.docker_container:
         name: passbolt
         image: passbolt/passbolt:latest
-        command: [
-          "/usr/bin/wait-for.sh",
-          "-t",
-          "0",
-          "192.168.178.103:3306",
-          "--",
-          "/docker-entrypoint.sh"
-        ]
+        command:
+          [
+            "/usr/bin/wait-for.sh",
+            "-t",
+            "0",
+            "192.168.178.103:3306",
+            "--",
+            "/docker-entrypoint.sh",
+          ]
         env:
           APP_FULL_BASE_URL: "https://passbolt.{{ root_domain }}"
           DATASOURCES_DEFAULT_HOST: "192.168.178.103"
@@ -417,25 +418,25 @@
       copy:
         dest: /root/authelia-config/authelia_jwt_secret.key
         content: "{{ authelia_jwt_secret }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure authelia session secret is on remote
       copy:
         dest: /root/authelia-config/authelia_session_secret.key
         content: "{{ authelia_session_secret }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure authelia storage secret is on remote
       copy:
         dest: /root/authelia-config/authelia_storage_secret.key
         content: "{{ authelia_storage_secret }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure authelia smtp password is on remote
       copy:
         dest: /root/authelia-config/smtp_password.password
         content: "{{ smtp_password }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: Ensure Authelia Docker container is running
       community.docker.docker_container:
@@ -461,4 +462,4 @@
         networks:
           - name: web-secure
         healthcheck:
-              test: ["NONE"]
+          test: ["NONE"]
