@@ -1,5 +1,5 @@
 ---
-docker_ce_deb_repo: deb https://download.docker.com/linux/debian bullseye stable
+docker_ce_deb_repo: deb https://download.docker.com/linux/debian bookworm stable
 docker_ce_deb_gpg: https://download.docker.com/linux/debian/gpg
 
 shareuser_name: shareuser

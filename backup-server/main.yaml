@@ -5,7 +5,6 @@
   vars_files:
     - vars.yaml
 
-
   handlers:
     - name: Restart proxmox-backup-proxy
       ansible.builtin.service:
@@ -13,11 +12,10 @@
         state: restarted
 
   pre_tasks:
-    - name: Update cache if needed (Debian)
+    - name: Update cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
-      when: ansible_os_family == "Debian"
 
     - name: Update packages
       ansible.builtin.package:

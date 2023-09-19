@@ -2,8 +2,8 @@
 shareuser_name: shareuser
 share_group: sharegroup
 pbsuser_name: pbsuser
-NVIDIA_download_url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
-NVIDIA_version: 525.89.02
-pbs_client_apt_repo: deb http://download.proxmox.com/debian/pbs-client bullseye main
-proxmox_gpg_key: http://download.proxmox.com/debian/proxmox-release-bullseye.gpg
+NVIDIA_download_url: https://us.download.nvidia.com/XFree86/Linux-x86_64/535.104.05/NVIDIA-Linux-x86_64-535.104.05.run
+NVIDIA_version: 535.104.05
+pbs_client_apt_repo: deb http://download.proxmox.com/debian/pbs-client bookworm main
+proxmox_gpg_key: http://download.proxmox.com/debian/proxmox-release-bookworm.gpg
 ssh_key_location: /root/.ssh

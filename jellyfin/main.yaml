@@ -23,7 +23,7 @@
           - xz-utils
           - libicu-dev
         state: present
-  
+
   tasks:
     - name: Ensure share group exists
       ansible.builtin.group:
@@ -90,7 +90,7 @@
 
     - name: Ensure ffmpeg jellyfin is installed (Debian)
       ansible.builtin.apt:
-        deb: "{{ ffmpeg_download_folder }}/{{ ffmpeg_version }}/jellyfin-ffmpeg5_{{ ffmpeg_version }}-bullseye_amd64.deb"
+        deb: "{{ ffmpeg_download_folder }}/{{ ffmpeg_version }}/jellyfin-ffmpeg6_{{ ffmpeg_version }}-bookworm_amd64.deb"
       when: ansible_os_family == "Debian"
 
     - name: Ensure ffmpeg jellyfin is installed (RedHat)

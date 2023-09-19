@@ -3,8 +3,8 @@ install_location: /opt
 jellyfin_download_folder: https://repo.jellyfin.org/releases/server/linux/stable/combined
 jellyfin_version: 10.8.10
 ffmpeg_download_folder: https://repo.jellyfin.org/releases/server/debian/versions/jellyfin-ffmpeg
-ffmpeg_version: 5.1.2-7
+ffmpeg_version: 6.0-6
 user_name: jellyfin
 share_group: sharegroup
-NVIDIA_download_url: https://us.download.nvidia.com/XFree86/Linux-x86_64/525.89.02/NVIDIA-Linux-x86_64-525.89.02.run
-NVIDIA_version: 525.89.02
+NVIDIA_download_url: https://us.download.nvidia.com/XFree86/Linux-x86_64/535.104.05/NVIDIA-Linux-x86_64-535.104.05.run
+NVIDIA_version: 535.104.05

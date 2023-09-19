@@ -15,11 +15,10 @@
         xz_package: xz
       when: ansible_os_family == "RedHat"
 
-    - name: Update cache if needed (Debian)
+    - name: Update cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
-      when: ansible_os_family == "Debian"
 
     - name: Update packages
       ansible.builtin.package:
@@ -64,21 +63,21 @@
         dest: "{{ factorio_install_location }}/factorio/{{ save_name }}.zip"
         owner: "{{ user_name }}"
         group: "{{ group_name }}"
-        mode: '0664'
+        mode: "0664"
         force: false
 
     - name: Ensure factorio service file is on remote (systemd)
       ansible.builtin.copy:
         src: ./files/factorio.service
         dest: /etc/systemd/system/factorio.service
-        mode: '0664'
+        mode: "0664"
       when: not ansible_distribution == "CentOS"
 
     - name: Ensure factorio service file is on remote (sysvinit)
       ansible.builtin.copy:
         src: ./files/factorio
         dest: /etc/init.d/factorio
-        mode: '0755'
+        mode: "0755"
       when: ansible_distribution == "CentOS"
 
     - name: Ensure factorio service is enabled and started

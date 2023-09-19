@@ -4,7 +4,7 @@
 
   tasks:
     - name: Ensure containers are started
-      ansible.builtin.command: "pct restart {{ item }}"
+      ansible.builtin.command: "pct start {{ item }}"
       loop:
         - 101
         - 102
@@ -19,26 +19,8 @@
       changed_when: "'already running' not in container_start_result.stdout"
       failed_when: false
 
-    - name: Ensure containers have an addressed ip
-      ansible.builtin.command: "pct exec {{ item }} dhclient"
-      loop:
-        - 101
-        - 102
-        - 103
-        - 104
-      register: dhclient_result
-      changed_when: "'File exists' not in dhclient_result.stdout"
-
-    - name: Ensure wg-dashboard is running
-      ansible.builtin.command: "pct exec 102 systemctl restart wg-dashboard"
-      changed_when: false
-
-    - name: Ensure website lighttpd log folder is owned by lighttpd
-      ansible.builtin.command: "pct exec 106 chown -R lighttpd:lighttpd /var/log/lighttpd"
-      changed_when: false
-
-    - name: Ensure website service is running
-      ansible.builtin.command: "pct exec 106 systemctl start lighttpd"
+    - name: Fix container issues
+      ansible.builtin.shell: /root/fix-container-issues.sh
       changed_when: false
 
 - name: Ensure containers are updated

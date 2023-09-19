@@ -4,6 +4,7 @@
 
   vars_files:
     - vars.yaml
+    - vars-private.yaml
 
   handlers:
     - name: Restart sshd
@@ -92,8 +93,8 @@
       ansible.builtin.lineinfile:
         path: /etc/postfix/main.cf
         firstmatch: true
-        regexp: '^relayhost =$'
-        line: '#relayhost ='
+        regexp: "^relayhost =$"
+        line: "#relayhost ="
       notify: Restart postfix
 
     - name: Ensure smtp config is in postfix config
