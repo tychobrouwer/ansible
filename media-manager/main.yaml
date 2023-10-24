@@ -6,16 +6,16 @@
     - vars.yaml
 
   pre_tasks:
-    - name: Update cache if needed (Debian)
-      ansible.builtin.apt:
-        update_cache: true
-        cache_valid_time: 3600
-      when: ansible_os_family == "Debian"
+    # - name: Update cache if needed (Debian)
+    #   ansible.builtin.apt:
+    #     update_cache: true
+    #     cache_valid_time: 3600
+    #   when: ansible_os_family == "Debian"
 
-    - name: Update packages
-      ansible.builtin.package:
-        name: "*"
-        state: latest
+    # - name: Update packages
+    #   ansible.builtin.package:
+    #     name: "*"
+    #     state: latest
 
   tasks:
     - name: Install required packages
@@ -91,13 +91,13 @@
         dest: /etc/openvpn/pass
         mode: "0400"
 
-    - name: Ensure NordVPN connection file is present on remore
+    - name: Ensure NordVPN connection file is present on remote
       ansible.builtin.copy:
         src: ./files/nl900.ovpn
         dest: /etc/openvpn/client.conf
         mode: "0644"
 
-    - name: Ensure NordVPN connection file is present on remore
+    - name: Ensure NordVPN connection file is present on remote
       ansible.builtin.copy:
         src: ./files/nl900.ovpn
         dest: /etc/openvpn/nl900.ovpn
@@ -111,7 +111,7 @@
 
     - name: Ensure openvpn service is enabled and started
       ansible.builtin.service:
-        name: client
+        name: openvpn@client
         state: started
         enabled: true
 
@@ -209,7 +209,7 @@
 
     - name: Ensure Sonarr repository is in sources list
       ansible.builtin.apt_repository:
-        repo: deb https://apt.sonarr.tv/debian bullseye main
+        repo: deb http://apt.sonarr.tv/debian bullseye main
         state: present
 
     - name: Ensure Sonarr is installed

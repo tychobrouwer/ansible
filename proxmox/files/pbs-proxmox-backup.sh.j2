@@ -4,4 +4,4 @@ export PBS_FINGERPRINT="{{ pbs_fingerprint }}"
 export PBS_LOG="warn"
 export PXAR_LOG="warn"
 
-/usr/bin/proxmox-backup-client backup file-share.pxar:/media/file-share lxc-config.pxar:/etc/pve/lxc --repository backup@pbs@192.168.178.108:main
+proxmox-backup-client backup file-share.pxar:/media/file-share lxc-config.pxar:/etc/pve/lxc --repository backup@pbs@192.168.178.108:main

@@ -1,0 +1,9 @@
+---
+- name: Setup OpnSense server
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  tasks:

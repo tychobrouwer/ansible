@@ -85,7 +85,7 @@
 
     - name: Ensure openvpn service is enabled and started
       ansible.builtin.service:
-        name: client
+        name: openvpn@client
         state: started
         enabled: true
 
@@ -108,7 +108,7 @@
       ansible.builtin.get_url:
         url: "{{ qBittorrent_nox_static_url }}"
         dest: "/home/{{ torrentuser_name }}/bin/qbittorrent-nox"
-        mode: '0755'
+        mode: "0755"
         owner: "{{ torrentuser_name }}"
         group: "{{ torrentuser_name }}"
 
