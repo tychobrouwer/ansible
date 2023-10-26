@@ -56,6 +56,9 @@ appConfig:
     .item.size-medium div img {
       margin-bottom:0
     }
+    .tile-icon {
+      object-fit: contain!important;
+    }
 
 sections:
   - name: Home Network
@@ -76,7 +79,7 @@ sections:
         url: https://passbolt.{{ root_domain }}
         statusCheck: true
         statusCheckUrl: http://192.168.178.103:4080
-        statusCheckAcceptCodes: 401
+        statusCheckAcceptCodes: "401"
 
       - title: Portfolio
         url: https://www.{{ root_domain }}/
@@ -94,19 +97,13 @@ sections:
         url: https://pihole.{{ root_domain }}/
         statusCheck: true
         statusCheckUrl: http://192.168.178.101:80
-        statusCheckAcceptCodes: 403
+        statusCheckAcceptCodes: "403"
 
       - title: Wireguard
         icon: hl-wireguard
         url: https://wireguard.{{ root_domain }}/
         statusCheck: true
         statusCheckUrl: http://192.168.178.102:10086
-
-      - title: Jellyfin
-        url: https://jellyfin.{{ root_domain }}/web/index.html#!/home.html
-        icon: hl-jellyfin
-        statusCheck: true
-        statusCheckUrl: http://192.168.178.111:8096
 
       - title: Portainer
         icon: hl-portainer
@@ -174,7 +171,7 @@ sections:
 
     items:
       - title: Google Calandar
-        icon: https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_31_2x.png
+        icon: hl-google-calendar
         url: https://calendar.google.com/
 
       - title: Youtube
@@ -182,8 +179,14 @@ sections:
         url: https://www.youtube.com/
 
       - title: Netflix
-        icon: favicon
+        icon: hl-netflix
         url: https://www.netflix.com/browse
+
+      - title: Jellyfin
+        url: https://jellyfin.{{ root_domain }}/web/index.html#!/home.html
+        icon: hl-jellyfin
+        statusCheck: true
+        statusCheckUrl: http://192.168.178.111:8096
 
       - title: Videoland
         icon: favicon
@@ -198,7 +201,7 @@ sections:
         url: https://www.icloud.com/
 
       - title: Reddit
-        icon: favicon
+        icon: hl-reddit
         url: https://www.reddit.com/
 
       - title: Linkedin
@@ -232,7 +235,7 @@ sections:
         url: https://canvas.tue.nl/
 
       - title: Office 365
-        icon: https://res.cdn.office.net/officehub/officestartresources/m365-icon_light_and_dark_small.svg
+        icon: hl-office-365
         url: https://www.office.com/
 
       - title: Osiris
@@ -247,13 +250,17 @@ sections:
         url: https://videocollege.tue.nl/Mediasite/Showcase/5faaf306ddb04160a674b9709f79809f44
         icon: https://mediasite.com/wp-content/themes/base-child/assets/images/Mediasite-Logo-Mark_Color@2x.png
 
+      - title: DeepL
+        url: https://www.deepl.com/translator
+        icon: https://static.deepl.com/img/logo/DeepL_Logo_darkBlue_v2.svg
+
       - title: Overleaf
         url: https://www.overleaf.com/project
         icon: favicon
 
-      - title: DeepL
-        url: https://www.deepl.com/translator
-        icon: https://static.deepl.com/img/logo/DeepL_Logo_darkBlue_v2.svg
+      - title: TUe Gitlab
+        url: https://gitlab.tue.nl/dashboard/projects
+        icon: hl-gitlab
 
       - title: ANS Delft
         icon: favicon
