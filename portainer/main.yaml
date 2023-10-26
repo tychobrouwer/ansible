@@ -141,9 +141,9 @@
         name: portainer
         image: portainer/portainer-ce:linux-amd64
         state: started
-        ports:
-          - "8000:8000"
-          - "9000:9000"
+        # ports:
+        # - "8000:8000"
+        # - "9000:9000"
         labels:
           traefik.enable: "true"
           traefik.http.routers.portainer.rule: "Host(`portainer.{{ root_domain }}`)"
@@ -267,8 +267,8 @@
       community.docker.docker_container:
         name: grafana
         image: grafana/grafana-enterprise:latest
-        ports:
-          - "3000:3000"
+        # ports:
+        #   - "3000:3000"
         labels:
           traefik.enable: "true"
           traefik.http.routers.grafana.rule: "Host(`grafana.{{ root_domain }}`)"
@@ -361,8 +361,9 @@
           traefik.http.routers.passbolt.rule: "Host(`passbolt.{{ root_domain }}`)"
           traefik.http.routers.passbolt.entrypoints: "web-secure"
           traefik.http.routers.passbolt.tls: "true"
-        ports:
-          - 4080:80
+          traefik.http.routers.passbolt.middlewares: authelia@file
+        # ports:
+        # - 4080:80
         networks:
           - name: web-secure
 
@@ -391,8 +392,8 @@
           - /var/run/docker.sock:/var/run/docker.sock
         env:
           WATCHTOWER_CLEANUP: "true"
-        ports:
-          - "3080:3080"
+        # ports:
+        # - "3080:3080"
         restart_policy: unless-stopped
 
 - name: Install Authelia container
@@ -463,3 +464,28 @@
           - name: web-secure
         healthcheck:
           test: ["NONE"]
+
+- name: Install Draw.io container
+  hosts: all
+
+  vars_files:
+    - vars.yaml
+    - vars-private.yaml
+
+  tasks:
+    - name: Ensure Draw.io Docker container is running
+      community.docker.docker_container:
+        name: drawio
+        image: jgraph/drawio:latest
+        restart_policy: unless-stopped
+        # ports:
+        # - "3070:8080"
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.drawio.rule: "Host(`drawio.{{ root_domain }}`)"
+          traefik.http.routers.drawio.entrypoints: "web-secure"
+          traefik.http.routers.drawio.tls: "true"
+          traefik.http.routers.drawio.middlewares: authelia@file
+          traefik.http.services.drawio.loadbalancer.server.port: "8080"
+        networks:
+          - name: web-secure
