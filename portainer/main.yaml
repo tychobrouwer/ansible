@@ -141,9 +141,9 @@
         name: portainer
         image: portainer/portainer-ce:linux-amd64
         state: started
-        # ports:
-        # - "8000:8000"
-        # - "9000:9000"
+        ports:
+          # - "8000:8000"
+          - "9000:9000"
         labels:
           traefik.enable: "true"
           traefik.http.routers.portainer.rule: "Host(`portainer.{{ root_domain }}`)"
@@ -267,8 +267,8 @@
       community.docker.docker_container:
         name: grafana
         image: grafana/grafana-enterprise:latest
-        # ports:
-        #   - "3000:3000"
+        ports:
+          - "3000:3000"
         labels:
           traefik.enable: "true"
           traefik.http.routers.grafana.rule: "Host(`grafana.{{ root_domain }}`)"
@@ -362,8 +362,8 @@
           traefik.http.routers.passbolt.entrypoints: "web-secure"
           traefik.http.routers.passbolt.tls: "true"
           traefik.http.routers.passbolt.middlewares: authelia@file
-        # ports:
-        # - 4080:80
+        ports:
+          - 4080:80
         networks:
           - name: web-secure
 
@@ -478,8 +478,8 @@
         name: drawio
         image: jgraph/drawio:latest
         restart_policy: unless-stopped
-        # ports:
-        # - "3070:8080"
+        ports:
+          - "3070:8080"
         labels:
           traefik.enable: "true"
           traefik.http.routers.drawio.rule: "Host(`drawio.{{ root_domain }}`)"
