@@ -287,7 +287,7 @@
 
     - name: Install proxmox headers are installed
       ansible.builtin.apt:
-        name: "pve-headers-{{ proxmox_info.stdout }}"
+        name: "proxmox-headers-{{ proxmox_info.stdout }}"
         state: present
 
     # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
@@ -329,3 +329,23 @@
       ansible.builtin.command: update-initramfs -u
       changed_when: false
       when: "'command not found' in nvidia_result.stdout"
+
+    - name: Get guid of nvidia files
+      ansible.builtin.shell: "ls -l /dev/nvidia* | awk '{print $5}' | uniq | grep . | tr -d -c '0-9\n'"
+      register: nvidia_guid
+      changed_when: false
+
+    - name: Add nvidia guids to lxc 111 config
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/111.conf
+        block: |
+          lxc.cgroup2.devices.allow: c {{ nvidia_guid.stdout_lines[0] }}:* rwm
+          lxc.cgroup2.devices.allow: c {{ nvidia_guid.stdout_lines[1] }}:* rwm
+          lxc.cgroup2.devices.allow: c {{ nvidia_guid.stdout_lines[2] }}:* rwm
+          lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-caps/nvidia-cap1 dev/nvidia-caps/nvidia-cap1 none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-caps/nvidia-cap2 dev/nvidia-caps/nvidia-cap2 none bind,optional,create=file

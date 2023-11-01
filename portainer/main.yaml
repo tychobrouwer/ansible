@@ -361,7 +361,6 @@
           traefik.http.routers.passbolt.rule: "Host(`passbolt.{{ root_domain }}`)"
           traefik.http.routers.passbolt.entrypoints: "web-secure"
           traefik.http.routers.passbolt.tls: "true"
-          traefik.http.routers.passbolt.middlewares: authelia@file
         ports:
           - 4080:80
         networks:
@@ -464,71 +463,70 @@
           - name: web-secure
         healthcheck:
           test: ["NONE"]
+# - name: Install Draw.io plantuml server container
+#   hosts: all
 
-- name: Install Draw.io plantuml server container
-  hosts: all
+#   tasks:
+#     - name: Ensure Draw.io plantuml Docker container is running
+#       community.docker.docker_container:
+#         name: plantuml-drawio
+#         image: plantuml/plantuml-server:latest
+#         restart_policy: unless-stopped
+#         ports:
+#           - "3060:8080"
+#         networks:
+#           - name: web-secure
 
-  tasks:
-    - name: Ensure Draw.io plantuml Docker container is running
-      community.docker.docker_container:
-        name: plantuml-drawio
-        image: plantuml/plantuml-server:latest
-        restart_policy: unless-stopped
-        ports:
-          - "3060:8080"
-        networks:
-          - name: web-secure
+# - name: Install Draw.io export image server container
+#   hosts: all
 
-- name: Install Draw.io export image server container
-  hosts: all
+#   vars_files:
+#     - vars.yaml
+#     - vars-private.yaml
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
+#   tasks:
+#     - name: Ensure Draw.io export image Docker container is running
+#       community.docker.docker_container:
+#         name: export-image-drawio
+#         image: jgraph/export-server:latest
+#         restart_policy: unless-stopped
+#         ports:
+#           - "3050:8000"
+#         networks:
+#           - name: web-secure
+#         env:
+#           DRAWIO_BASE_URL: https://drawio.{{ root_domain }}
 
-  tasks:
-    - name: Ensure Draw.io export image Docker container is running
-      community.docker.docker_container:
-        name: export-image-drawio
-        image: jgraph/export-server:latest
-        restart_policy: unless-stopped
-        ports:
-          - "3050:8000"
-        networks:
-          - name: web-secure
-        env:
-          DRAWIO_BASE_URL: https://drawio.{{ root_domain }}
+# - name: Install Draw.io container
+#   hosts: all
 
-- name: Install Draw.io container
-  hosts: all
+#   vars_files:
+#     - vars.yaml
+#     - vars-private.yaml
 
-  vars_files:
-    - vars.yaml
-    - vars-private.yaml
-
-  tasks:
-    - name: Ensure Draw.io Docker container is running
-      community.docker.docker_container:
-        name: drawio
-        image: jgraph/drawio:latest
-        restart_policy: unless-stopped
-        ports:
-          - "3070:8080"
-        env:
-          DRAWIO_SELF_CONTAINED: 1
-          PLANTUML_URL: http://192.168.178.103:3060/
-          EXPORT_URL: http://192.168.178.103:3050/
-          DRAWIO_BASE_URL: https://drawio.{{ root_domain }}
-          DRAWIO_SERVER_URL: https://drawio.{{ root_domain }}/
-          DRAWIO_GITLAB_ID: "{{ drawio_gitlab_id }}"
-          DRAWIO_GITLAB_SECRET: "{{ drawio_gitlab_secret }}"
-          DRAWIO_GITLAB_URL: "{{ drawio_gitlab_url }}"
-        labels:
-          traefik.enable: "true"
-          traefik.http.routers.drawio.rule: "Host(`drawio.{{ root_domain }}`)"
-          traefik.http.routers.drawio.entrypoints: "web-secure"
-          traefik.http.routers.drawio.tls: "true"
-          traefik.http.routers.drawio.middlewares: authelia@file
-          traefik.http.services.drawio.loadbalancer.server.port: "8080"
-        networks:
-          - name: web-secure
+#   tasks:
+#     - name: Ensure Draw.io Docker container is running
+#       community.docker.docker_container:
+#         name: drawio
+#         image: jgraph/drawio:latest
+#         restart_policy: unless-stopped
+#         ports:
+#           - "3070:8080"
+#         env:
+#           DRAWIO_SELF_CONTAINED: 1
+#           PLANTUML_URL: http://192.168.178.103:3060/
+#           EXPORT_URL: http://192.168.178.103:3050/
+#           DRAWIO_BASE_URL: https://drawio.{{ root_domain }}
+#           DRAWIO_SERVER_URL: https://drawio.{{ root_domain }}/
+#           DRAWIO_GITLAB_ID: "{{ drawio_gitlab_id }}"
+#           DRAWIO_GITLAB_SECRET: "{{ drawio_gitlab_secret }}"
+#           DRAWIO_GITLAB_URL: "{{ drawio_gitlab_url }}"
+#         labels:
+#           traefik.enable: "true"
+#           traefik.http.routers.drawio.rule: "Host(`drawio.{{ root_domain }}`)"
+#           traefik.http.routers.drawio.entrypoints: "web-secure"
+#           traefik.http.routers.drawio.tls: "true"
+#           traefik.http.routers.drawio.middlewares: authelia@file
+#           traefik.http.services.drawio.loadbalancer.server.port: "8080"
+#         networks:
+#           - name: web-secure
