@@ -7,3 +7,4 @@ prowlarr_url: http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&r
 radarr_url: http://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
 
 sonarr_ip_api: https://networkcalc.com/api/dns/lookup/skyhook.sonarr.tv
+sonarr_apt_ip_api: https://networkcalc.com/api/dns/lookup/apt.sonarr.tv

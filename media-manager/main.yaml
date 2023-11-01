@@ -5,18 +5,6 @@
   vars_files:
     - vars.yaml
 
-  pre_tasks:
-    # - name: Update cache if needed (Debian)
-    #   ansible.builtin.apt:
-    #     update_cache: true
-    #     cache_valid_time: 3600
-    #   when: ansible_os_family == "Debian"
-
-    # - name: Update packages
-    #   ansible.builtin.package:
-    #     name: "*"
-    #     state: latest
-
   tasks:
     - name: Install required packages
       ansible.builtin.package:
@@ -92,17 +80,17 @@
         dest: /etc/openvpn/pass
         mode: "0400"
 
-    - name: Get sonarr ip
-      ansible.builtin.uri:
-        url: "{{ sonarr_ip_api }}"
-        return_content: yes
-      register: sonarr_ip
-
     - name: Ensure NordVPN connection file is present on remote
       ansible.builtin.copy:
         src: ./files/nl900.ovpn
         dest: /etc/openvpn/client.conf
         mode: "0644"
+
+    - name: Get sonarr ips
+      ansible.builtin.uri:
+        url: "{{ sonarr_ip_api }}"
+        return_content: yes
+      register: sonarr_ip
 
     - name: Add sonarr ips to openvpn config
       ansible.builtin.blockinfile:
@@ -111,7 +99,22 @@
         block: |
           route {{ item.address }} 255.255.255.255 vpn_gateway
         marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.address }}"
-      loop: "{{ skyhook_ip.json.records.A }}"
+      loop: "{{ sonarr_ip.json.records.A }}"
+
+    - name: Get sonarr apt ips
+      ansible.builtin.uri:
+        url: "{{ sonarr_apt_ip_api }}"
+        return_content: yes
+      register: sonarr_apt_ip
+
+    - name: Add sonarr apt ips to openvpn config
+      ansible.builtin.blockinfile:
+        path: /etc/openvpn/client.conf
+        insertafter: route-nopull
+        block: |
+          route {{ item.address }} 255.255.255.255 vpn_gateway
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.address }}"
+      loop: "{{ sonarr_apt_ip.json.records.A }}"
 
     - name: Ensure openvpn config is present on remore
       ansible.builtin.copy:
@@ -124,6 +127,21 @@
         name: openvpn@client
         state: restarted
         enabled: true
+
+- name: Install updates
+  hosts: all
+
+  tasks:
+    - name: Update cache if needed (Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
 
 - name: Install Radarr
   hosts: all
@@ -216,10 +234,11 @@
       ansible.builtin.apt_key:
         keyserver: hkp://keyserver.ubuntu.com:80
         id: 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8
+        keyring: /usr/share/keyrings/sonarr.gpg
 
     - name: Ensure Sonarr repository is in sources list
       ansible.builtin.apt_repository:
-        repo: deb http://apt.sonarr.tv/debian bullseye main
+        repo: deb [signed-by=/usr/share/keyrings/sonarr.gpg] https://apt.sonarr.tv/debian buster main
         state: present
 
     - name: Ensure Sonarr is installed
