@@ -77,6 +77,7 @@
 
   vars_files:
     - vars-private.yaml
+    - vars.yaml
 
   tasks:
     - name: Ensure openvpn is installed
@@ -91,17 +92,26 @@
         dest: /etc/openvpn/pass
         mode: "0400"
 
+    - name: Get sonarr ip
+      ansible.builtin.uri:
+        url: "{{ sonarr_ip_api }}"
+        return_content: yes
+      register: sonarr_ip
+
     - name: Ensure NordVPN connection file is present on remote
       ansible.builtin.copy:
         src: ./files/nl900.ovpn
         dest: /etc/openvpn/client.conf
         mode: "0644"
 
-    - name: Ensure NordVPN connection file is present on remote
-      ansible.builtin.copy:
-        src: ./files/nl900.ovpn
-        dest: /etc/openvpn/nl900.ovpn
-        mode: "0644"
+    - name: Add sonarr ips to openvpn config
+      ansible.builtin.blockinfile:
+        path: /etc/openvpn/client.conf
+        insertafter: route-nopull
+        block: |
+          route {{ item.address }} 255.255.255.255 vpn_gateway
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.address }}"
+      loop: "{{ skyhook_ip.json.records.A }}"
 
     - name: Ensure openvpn config is present on remore
       ansible.builtin.copy:
@@ -112,7 +122,7 @@
     - name: Ensure openvpn service is enabled and started
       ansible.builtin.service:
         name: openvpn@client
-        state: started
+        state: restarted
         enabled: true
 
 - name: Install Radarr
