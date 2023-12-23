@@ -13,16 +13,16 @@
         cache_valid_time: 3600
       when: ansible_os_family == "Debian"
 
+    - name: Update packages
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+
     - name: Run apt autoremove and clean (Debian)
       apt:
         clean: yes
         autoremove: yes
       when: ansible_os_family == "Debian"
-
-    - name: Update packages
-      ansible.builtin.package:
-        name: "*"
-        state: latest
 
 - name: Install NVIDIA drivers proxmox host
   hosts: proxmox
@@ -31,14 +31,19 @@
     - vars.yaml
 
   tasks:
+    - name: Reboot
+      ansible.builtin.reboot:
+        msg: "Rebooting to install NVIDIA drivers"
+        post_reboot_delay: 30
+
     - name: Get proxmox version
       ansible.builtin.command: uname -r
       changed_when: false
       register: proxmox_info
 
-    - name: Install proxmox headers are installed
+    - name: Install proxmox headers
       ansible.builtin.apt:
-        name: "pve-headers-{{ proxmox_info.stdout }}"
+        name: "proxmox-headers-{{ proxmox_info.stdout }}"
         state: present
 
     # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
@@ -57,7 +62,7 @@
     - name: Run NVIDIA installer
       ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq"
       failed_when: false
-      when: "'command not found' in nvidia_result.stdout"
+      when: "'command not found' in nvidia_result.stdout or 'NVIDIA-SMI has failed' in nvidia_result.stdout"
 
     - name: ensure NVIDIA rules are present
       ansible.builtin.copy:
@@ -100,3 +105,34 @@
           lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
           lxc.mount.entry: /dev/nvidia-caps/nvidia-cap1 dev/nvidia-caps/nvidia-cap1 none bind,optional,create=file
           lxc.mount.entry: /dev/nvidia-caps/nvidia-cap2 dev/nvidia-caps/nvidia-cap2 none bind,optional,create=file
+
+- name: Install NVIDIA drivers jellyfin
+  hosts: jellyfin
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    # tutorial: https://theorangeone.net/posts/lxc-nvidia-gpu-passthrough/
+    - name: Ensure NVIDIA installer is present
+      ansible.builtin.get_url:
+        url: "{{ NVIDIA_download_url }}"
+        dest: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run"
+        mode: "0755"
+
+    - name: Run NVIDIA installer
+      ansible.builtin.command: "/root/NVIDIA-Linux-x86_64-{{ NVIDIA_version }}.run -asq --no-kernel-module"
+      register: nvidia_installer
+      changed_when: "'appears to already be loaded' not in nvidia_installer.stdout"
+
+- name: Reboot proxmox host
+  hosts: proxmox
+
+  tasks:
+    - name: Reboot
+      ansible.builtin.reboot:
+        msg: "Rebooting to install NVIDIA drivers"
+        post_reboot_delay: 30
+
+    - name: fix container issues
+      ansible.builtin.shell: "/root/fix-container-issues.sh"
