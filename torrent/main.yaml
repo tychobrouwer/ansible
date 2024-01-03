@@ -21,21 +21,21 @@
   tasks:
     - name: Ensure share group exists
       ansible.builtin.group:
-        name: "{{ share_group }}"
+        name: "{{ mountuser_name }}"
         gid: 3500
         state: present
 
     - name: Ensure share user group exists
       ansible.builtin.group:
         name: "{{ torrentuser_name }}"
-        gid: 3501
+        gid: 1000
         state: present
 
     - name: Ensure share user exists
       ansible.builtin.user:
         name: "{{ torrentuser_name }}"
         group: "{{ torrentuser_name }}"
-        groups: "{{ share_group }}"
+        groups: "{{ mountuser_name }}"
         uid: 1000
         password: "{{ torrentuser_password | password_hash(hashtype='sha512', salt=torrentuser_salt) }}"
         state: present

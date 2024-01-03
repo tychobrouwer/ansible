@@ -13,45 +13,51 @@
           - sqlite3
         state: present
 
-    - name: Ensure media share group exists
+    - name: Ensure mount share group exists
       ansible.builtin.group:
-        name: "{{ media_group }}"
+        name: "{{ mountuser_name }}"
         gid: 3500
         state: present
 
-    - name: Ensure media user is present
+    - name: Ensure mount user is present
       ansible.builtin.user:
-        name: "{{ media_group }}"
-        group: "{{ media_group }}"
-        uid: 1000
+        name: "{{ mountuser_name }}"
+        group: "{{ mountuser_name }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+        uid: 3500
         state: present
 
     - name: Ensure Prowlarr group exists
       ansible.builtin.group:
-        name: "{{ prowlarr_name }}"
-        gid: 3501
+        name: "{{ prowlarruser_name }}"
+        gid: 1001
         state: present
 
     - name: Ensure Prowlarr user is present
       ansible.builtin.user:
-        name: "{{ prowlarr_name }}"
-        group: "{{ prowlarr_name }}"
-        uid: 1002
-        groups: "{{ media_group }}"
+        name: "{{ prowlarruser_name }}"
+        group: "{{ prowlarruser_name }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+        uid: 1001
+        groups: "{{ mountuser_name }}"
         state: present
 
     - name: Ensure Radarr_name group exists
       ansible.builtin.group:
-        name: "{{ radarr_name }}"
-        gid: 3502
+        name: "{{ radarruser_name }}"
+        gid: 1002
         state: present
 
     - name: Ensure Radarr user is present
       ansible.builtin.user:
-        name: "{{ radarr_name }}"
-        group: "{{ radarr_name }}"
-        uid: 1001
-        groups: "{{ media_group }}"
+        name: "{{ radarruser_name }}"
+        group: "{{ radarruser_name }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+        uid: 1002
+        groups: "{{ mountuser_name }}"
         state: present
 
     - name: Ensure share folder exists
@@ -248,5 +254,5 @@
 
     - name: Ensure Sonarr user is in media group
       ansible.builtin.user:
-        name: "{{ sonarr_name }}"
-        groups: "{{ media_group }}"
+        name: "{{ sonarruser_name }}"
+        groups: "{{ mountuser_name }}"

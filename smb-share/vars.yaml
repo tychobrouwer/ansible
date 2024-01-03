@@ -1,3 +1,3 @@
 ---
 sambauser_name: sambauser
-share_group: sharegroup
+mountuser_name: mountuser

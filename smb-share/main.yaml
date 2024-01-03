@@ -25,31 +25,42 @@
           - samba
         state: present
 
-    - name: Ensure share group exists
-      ansible.builtin.group:
-        name: "{{ share_group }}"
-        gid: 3500
-        state: present
-
     - name: Ensure samba user group exists
       ansible.builtin.group:
         name: "{{ sambauser_name }}"
-        gid: 3501
+        gid: 1000
+        state: present
+
+    - name: Ensure mount group exists
+      ansible.builtin.group:
+        name: "{{ mountuser_name }}"
+        gid: 3500
         state: present
 
     - name: Ensure samba user exists
       ansible.builtin.user:
         name: "{{ sambauser_name }}"
         group: "{{ sambauser_name }}"
-        groups: "{{ share_group }}"
+        groups: "{{ mountuser_name }}"
         uid: 1000
-        password: "{{ sambauser_password | password_hash(hashtype='sha512', salt=sambauser_salt) }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+        # password: "{{ sambauser_password | password_hash(hashtype='sha512', salt=sambauser_salt) }}"
         state: present
 
-    - name: Ensure root is in share group
+    - name: Ensure mount user exists
+      ansible.builtin.user:
+        name: "{{ mountuser_name }}"
+        group: "{{ mountuser_name }}"
+        uid: 3500
+        create_home: false
+        shell: /usr/sbin/nologin
+        state: present
+
+    - name: Ensure root is in mount group
       ansible.builtin.user:
         name: root
-        groups: "{{ share_group }}"
+        groups: "{{ mountuser_name }}"
         state: present
 
     - name: Ensure share folder exists

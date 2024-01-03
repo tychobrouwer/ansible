@@ -1,8 +1,8 @@
 ---
-prowlarr_name: prowlarr
-radarr_name: radarr
-sonarr_name: sonarr
-media_group: media
+prowlarruser_name: prowlarr
+radarruser_name: radarr
+sonarruser_name: sonarr
+mountuser_name: media
 prowlarr_url: http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
 radarr_url: http://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
 

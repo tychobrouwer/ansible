@@ -25,37 +25,34 @@
         state: present
 
   tasks:
-    - name: Ensure share group exists
+    - name: Ensure mount group exists
       ansible.builtin.group:
-        name: "{{ share_group }}"
+        name: "{{ mountuser_name }}"
         gid: 3500
         state: present
 
-    - name: Ensure share user exists
+    - name: Ensure mount user exists
       ansible.builtin.user:
-        name: "{{ share_user }}"
-        group: "{{ share_group }}"
-        uid: 1001
+        name: "{{ mountuser_name }}"
+        group: "{{ mountuser_name }}"
+        uid: 3500
         state: present
 
     - name: Ensure jellyfin user group exists
       ansible.builtin.group:
         name: "{{ user_name }}"
-        gid: 3501
+        gid: 1000
         state: present
 
     - name: Ensure jellyfin user exists
       ansible.builtin.user:
         name: "{{ user_name }}"
         group: "{{ user_name }}"
+        groups: "{{ mountuser_name }}"
         uid: 1000
-        password: "{{ jellyfin_password | ansible.builtin.password_hash(hashtype='sha512', salt=jellyfin_salt) }}"
-        state: present
-
-    - name: Ensure jellyfin is in share permissions
-      ansible.builtin.user:
-        name: "{{ user_name }}"
-        groups: "{{ share_group }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+        # password: "{{ jellyfin_password | ansible.builtin.password_hash(hashtype='sha512', salt=jellyfin_salt) }}"
         state: present
 
     - name: Ensure share folder exists

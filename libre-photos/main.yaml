@@ -18,15 +18,33 @@
         state: latest
 
   tasks:
+    - name: Ensure mount group exists
+      ansible.builtin.group:
+        name: mountuser
+        gid: 3500
+        state: present
+
+    - name: Ensure mount user exists
+      ansible.builtin.user:
+        name: mountuser
+        group: mountuser
+        shell: /usr/sbin/nologin
+        create_home: false
+        uid: 3500
+        state: present
+
     - name: create librephotos group
       ansible.builtin.group:
         name: librephotos
+        gid: 1000
         state: present
 
     - name: create librephotos user
       ansible.builtin.user:
         name: librephotos
         group: librephotos
+        groups: mountuser
+        uid: 1000
         shell: /usr/sbin/nologin
         home: /usr/lib/librephotos
         comment: Libre Photos user
@@ -56,25 +74,6 @@
         name: "{{ item }}"
         state: present
       loop: "{{ dependencies }}"
-
-    - name: Ensure share group exists
-      ansible.builtin.group:
-        name: shareuser
-        gid: 3510
-        state: present
-
-    - name: Ensure share user exists
-      ansible.builtin.user:
-        name: shareuser
-        group: shareuser
-        uid: 1010
-        state: present
-
-    - name: Ensure librephotos is in share permissions
-      ansible.builtin.user:
-        name: "librephotos"
-        groups: shareuser
-        state: present
 
     - name: Ensure share folder exists
       ansible.builtin.file:
