@@ -67,19 +67,19 @@ ubisoft_installer: https://ubi.li/4vxt9
 cifs_mounts:
   - name: mnt-file_share
     description: file share mount point
-    what: //192.168.178.104/file_share/
+    what: //192.168.1.104/file_share/
     where: /mnt/file_share
     requires: /mnt
 
   - name: mnt-video_share
     description: video share mount point
-    what: //192.168.178.104/video_share/
+    what: //192.168.1.104/video_share/
     where: /mnt/video_share
     requires: /mnt
 
   - name: home-tychob-School
     description: school share mount point
-    what: //192.168.178.104/file_share/School
+    what: //192.168.1.104/file_share/School
     where: /home/tychob/School
     requires: /home/tychob
 

@@ -254,7 +254,7 @@
       community.docker.docker_volume:
         name: grafana_data
 
-    # scp root@192.168.178.103:/var/lib/docker/volumes/grafana_data/_data/grafana.db .\Desktop\
+    # scp root@192.168.1.103:/var/lib/docker/volumes/grafana_data/_data/grafana.db .\Desktop\
     - name: Ensure Grafana database are present on remote
       ansible.builtin.copy:
         src: ./config/grafana.db
@@ -335,13 +335,13 @@
             "/usr/bin/wait-for.sh",
             "-t",
             "0",
-            "192.168.178.103:3306",
+            "192.168.1.103:3306",
             "--",
             "/docker-entrypoint.sh",
           ]
         env:
           APP_FULL_BASE_URL: "https://passbolt.{{ root_domain }}"
-          DATASOURCES_DEFAULT_HOST: "192.168.178.103"
+          DATASOURCES_DEFAULT_HOST: "192.168.1.103"
           DATASOURCES_DEFAULT_PORT: "3306"
           DATASOURCES_DEFAULT_DATABASE: "passbolt"
           DATASOURCES_DEFAULT_USERNAME: "passbolt"
@@ -526,8 +526,8 @@
 #           - "3070:8080"
 #         env:
 #           DRAWIO_SELF_CONTAINED: 1
-#           PLANTUML_URL: http://192.168.178.103:3060/
-#           EXPORT_URL: http://192.168.178.103:3050/
+#           PLANTUML_URL: http://192.168.1.103:3060/
+#           EXPORT_URL: http://192.168.1.103:3050/
 #           DRAWIO_BASE_URL: https://drawio.{{ root_domain }}
 #           DRAWIO_SERVER_URL: https://drawio.{{ root_domain }}/
 #           DRAWIO_GITLAB_ID: "{{ drawio_gitlab_id }}"

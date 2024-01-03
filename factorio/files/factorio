@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/opt/factorio/bin/x64"
-cmd="/opt/factorio/bin/x64/factorio --start-server /opt/factorio/factory.zip --bind 192.168.178.111 > output.log"
+cmd="/opt/factorio/bin/x64/factorio --start-server /opt/factorio/factory.zip --bind 192.168.1.111 > output.log"
 user="factorio"
 
 name=`basename $0`

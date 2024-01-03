@@ -2,6 +2,6 @@
 all:
   hosts:
     portainer:
-      ansible_host: 192.168.178.103
+      ansible_host: 192.168.1.103
   vars:
       ansible_user: root

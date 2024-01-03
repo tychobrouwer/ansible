@@ -2,6 +2,6 @@
 all:
   hosts:
     opnsense:
-      ansible_host: 192.168.178.2
+      ansible_host: 192.168.1.2
   vars:
     ansible_user: root

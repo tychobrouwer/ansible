@@ -5,7 +5,7 @@ After=network.target
 Type=simple
 User=factorio
 Group=factorio
-ExecStart=/opt/factorio/bin/x64/factorio --start-server /opt/factorio/factory.zip --bind 192.168.178.112 > output.log
+ExecStart=/opt/factorio/bin/x64/factorio --start-server /opt/factorio/factory.zip --bind 192.168.1.112 > output.log
 TimeoutStartSec=0
 RemainAfterExit=yes
 
