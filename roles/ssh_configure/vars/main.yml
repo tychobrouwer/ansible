@@ -1,0 +1,4 @@
+---
+# vars file for ssh
+role_ssh_key_type: ed25519
+role_ssh_dir: $HOME/.ssh

@@ -34,7 +34,6 @@
           - python3-pip
           - python3-psycopg2
           - openssh-server
-          - net-tools
         state: present
 
     - name: Ensure SSH password authentication is disabled

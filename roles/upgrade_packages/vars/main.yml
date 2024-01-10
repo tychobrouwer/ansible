@@ -1,0 +1,4 @@
+---
+# vars file for upgrade-packages
+role_clean: true
+role_auroremove: true

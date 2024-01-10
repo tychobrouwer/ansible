@@ -1,0 +1,34 @@
+---
+- name: Test playbook
+  hosts: test
+
+  vars_files:
+    - private.yml
+
+  vars:
+    smb_shares:
+      - name: file_share
+        comment: private file share
+        path: /share/file-share
+        writable: "yes"
+        browsable: "yes"
+        inherit_permissions: "yes"
+        force_user: mountuser
+        force_group: mountuser
+
+      - name: video_share
+        comment: private video share
+        path: /share/video-share
+        writable: "yes"
+        browsable: "yes"
+        inherit_permissions: "yes"
+        force_user: mountuser
+        force_group: mountuser
+
+  roles:
+    # - {role: upgrade_packages}
+    # - {role: start_containers, role_container_ids: [ 101, 102, 103 ]}
+    - {role: ssh_configure, role_authorized_keys: "{{ authorized_keys }}"}
+    # - {role: samba_configure, role_smb_password: "{{ smb_password }}", role_smb_shares: "{{ smb_shares }}"}
+    # - {role: git_configure, role_git_name: Tycho Brouwer, role_git_email: tycho.tbrouwer@gmail.com}
+

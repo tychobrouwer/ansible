@@ -1,0 +1,6 @@
+---
+# vars file for git
+role_git_name: git_name
+role_git_email: git_email@provider.com
+role_git_branch: main
+role_git_editor: nano
