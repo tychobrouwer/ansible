@@ -1,0 +1,3 @@
+---
+# vars file for lighttpd
+role_lighttpd_user: lighttpd
