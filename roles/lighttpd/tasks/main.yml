@@ -17,6 +17,17 @@
     dest: /etc/lighttpd/lighttpd.conf
   notify: Restart lighttpd
 
+- name: Create additional rules in lighttpd config
+  ansible.builting.blockinfile:
+    path: /etc/lighttpd/lighttpd.conf
+    block: "{{ item }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK RULE INDEX {{ idx }}"
+    append_newline: true
+    prepend_newline: true
+  loop: "{{ role_lighttpd_rules }}"
+  loop_control:
+    index_var: idx
+
 - name: Create lighttpd group
   ansible.builtin.group:
     name: "{{ role_lighttpd_user }}"

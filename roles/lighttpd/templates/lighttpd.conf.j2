@@ -1,4 +1,4 @@
-server.document-root       = "/var/www/html/personal-website-elm/public"
+server.document-root       = "/var/www/html/{{ role_server_name }}/{{ role_server_root }}"
 
 server.port                = {{ role_server_port }}
 server.username            = "{{ role_lighttpd_user }}"
@@ -85,14 +85,5 @@ mimetype.assign            = (
   ".json"         =>      "application/json"
 )
 
-index-file.names           = ( "index.html" )
+index-file.names           = ( "{{ role_entry_file }}" )
 
-url.rewrite-once = (
-  "^/(dist|images|api)/(.*)$" =>      "/$1/$2",
-  "^/robots.txt$"             =>      "/robots.txt",
-  ".*"                        =>      "/"
-)
-
-url.redirect = (
-  "^/(projects)$"             =>      "/index.html"
-)
