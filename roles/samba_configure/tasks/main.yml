@@ -42,9 +42,9 @@
 
 - name: Create shares in smb config file
   ansible.builtin.blockinfile:
-    dest: /etc/samba/smb.conf
+    path: /etc/samba/smb.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
-    blockinfile: |
+    block: |
       [{{ item.name }}]
         comment = {{ item.comment }}
         path = {{ item.path }}
@@ -56,7 +56,7 @@
         force group = {{ item.force_group }}
     prepend_newline: true
     append_newline: true
-    with_items: "{{ role_smb_shares }}"
+  with_items: "{{ role_smb_shares }}"
 
 
 - name: Ensure smb password is set

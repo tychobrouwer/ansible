@@ -14,6 +14,9 @@
 - name: Ensure Unbound config folder is present
   ansible.builtin.file:
     path: /etc/unbound/unbound.conf.d
+    mode: "0755"
+    owner: root
+    group: root
     state: directory
 
 - name: Copy unbound config file to remote
@@ -21,6 +24,8 @@
     src: ../templates/unbound.conf.j2
     dest: /etc/unbound/unbound.conf.d/pi-hole.conf
     mode: "0644"
+    owner: root
+    group: root
   notify: Restart unbound
 
 - name: Ensure root hints file for unbound exist

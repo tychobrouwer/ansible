@@ -1,9 +1,9 @@
 ---
 # tasks file for upgrade-packages
 - name: Using APT
-  include_tasks: apt.yml
+  ansible.builtin.include_tasks: apt.yml
   when: ansible_os_family == "Debian"
 
 - name: Using yum
-  include_tasks: yum.yml
+  ansible.builtin.include_tasks: yum.yml
   when: ansible_os_family == "RedHat"

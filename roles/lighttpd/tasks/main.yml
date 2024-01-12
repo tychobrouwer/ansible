@@ -15,6 +15,9 @@
   ansible.builtin.template:
     src: ./files/lighttpd.conf
     dest: /etc/lighttpd/lighttpd.conf
+    mode: "0644"
+    owner: root
+    group: root
   notify: Restart lighttpd
 
 - name: Create additional rules in lighttpd config
