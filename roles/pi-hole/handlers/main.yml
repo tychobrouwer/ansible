@@ -1,0 +1,9 @@
+---
+# handlers file for pi-hole
+- name: Restart unbound
+  ansible.builtin.service:
+    name: unbound
+    state: restarted
+
+- name: Start Pi-hole
+  ansible.builtin.command: pihole enable && pihole restartdns
