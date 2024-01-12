@@ -29,6 +29,7 @@
     # - {role: upgrade_packages}
     # - {role: start_containers, role_container_ids: [ 101, 102, 103 ]}
     - {role: ssh_configure, role_authorized_keys: "{{ authorized_keys }}"}
+    # - {role: lighttpd, role_git_source: "{{ portfolio_git }}", role_website_name: "{{ portfolio_name }}", role_server_ip: 192.168.1.106, role_server_address: "{{ portfolio_address }}" }
     # - {role: samba_configure, role_smb_password: "{{ smb_password }}", role_smb_shares: "{{ smb_shares }}"}
     # - {role: git_configure, role_git_name: Tycho Brouwer, role_git_email: tycho.tbrouwer@gmail.com}
 

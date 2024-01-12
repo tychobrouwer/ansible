@@ -35,7 +35,7 @@
     path: /var/log/lighttpd
     owner: "{{ role_lighttpd_user }}"
     group: "{{ role_lighttpd_user }}"
-    recurse: yes
+    recurse: true
 
 - name: Create lighttpd tmp directory
   ansible.builtin.file:
@@ -49,6 +49,6 @@
   ansible.builtin.git:
     repo: "{{ role_git_source }}"
     dest: "/var/www/html/{{ role_website_name }}"
-    single_branch: yes
+    single_branch: true
     version: main
     depth: 1
