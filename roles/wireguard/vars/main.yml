@@ -1,2 +1,11 @@
 ---
 # vars file for wireguard
+role_wireguard_port: 51820
+
+role_dashboard_admin: admin
+role_dashboard_port: 10086
+role_dashboard_git_repo: https://github.com/donaldzou/WGDashboard.git
+role_dashboard_install_location: /opt/wg-dashboard
+
+role_interface_name: wg0
+role_global_dns: 1.1.1.1

@@ -21,7 +21,7 @@
 
 - name: Copy unbound config file to remote
   ansible.builtin.template:
-    src: ../templates/unbound.conf.j2
+    src: unbound.conf.j2
     dest: /etc/unbound/unbound.conf.d/pi-hole.conf
     mode: "0644"
     owner: root

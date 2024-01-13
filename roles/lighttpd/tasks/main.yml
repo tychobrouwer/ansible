@@ -21,7 +21,7 @@
   notify: Restart lighttpd
 
 - name: Create additional rules in lighttpd config
-  ansible.builting.blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/lighttpd/lighttpd.conf
     block: "{{ item }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK RULE INDEX {{ idx }}"
