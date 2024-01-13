@@ -1,0 +1,6 @@
+---
+# handlers file for qbittorrent
+- name: Restart qbittorrent-nox
+  ansible.builtin.service:
+    name: qbittorrent-nox
+    state: restarted

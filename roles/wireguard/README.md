@@ -47,9 +47,9 @@ Example Playbook
             allowed_ips: 10.6.0.3/32
 
       roles:
-         - { role: username.rolename, role_dashboard_address: {{ dashboard_address }}, role_dashboard_password: {{ dashboard_password }},
+         - { role: wireguard, role_dashboard_address: {{ dashboard_address }}, role_dashboard_password: {{ dashboard_password }},
              role_host_wireguard_address: {{ host_wireguard_address }}, role_wireguard_peers: {{ wireguard_peers }} }
-         - { role: username.rolename, role_dashboard_address: {{ dashboard_address }}, role_dashboard_password: {{ dashboard_password }},
+         - { role: wireguard, role_dashboard_address: {{ dashboard_address }}, role_dashboard_password: {{ dashboard_password }},
              role_host_wireguard_address: {{ host_wireguard_address }}, role_wireguard_peers: {{ wireguard_peers }},
              role_dashboard_admin: "admin", role_wireguard_private_key: {{ wireguard_private_key }},
              role_dashboard_port: 10086, role_wireguard_port: 51820, role_interface_name: wg0, role_global_dns: 1.1.1.1 }

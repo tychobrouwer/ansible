@@ -23,8 +23,8 @@ Example Playbook
         password: "{{ password123 }}"
       
       roles:
-         - { role: username.rolename, role_ip_address: 192.168.1.101, role_admin_password: "{{ password }}" }
-         - { role: username.rolename, role_ip_address: 192.168.1.101, role_admin_password: "{{ password }}",
+         - { role: pihole, role_ip_address: 192.168.1.101, role_admin_password: "{{ password }}" }
+         - { role: pihole, role_ip_address: 192.168.1.101, role_admin_password: "{{ password }}",
              role_unbound_port: 5353, role_root_hints_url: https://www.internic.net/domain/named.root }
 ```
 

@@ -13,7 +13,7 @@
     mode: "0600"
     owner: root
     group: root
-  notify: restart openvpn
+  notify: Restart openvpn
 
 - name: Ensure NordVPN connection file is present on remote
   ansible.builtin.get_url:
@@ -22,7 +22,7 @@
     mode: "0644"
     owner: root
     group: root
-  notify: restart openvpn
+  notify: Restart openvpn
 
 - name: Ensure openvpn config is present on remote
   ansible.builtin.copy:
@@ -31,7 +31,7 @@
     mode: "0644"
     owner: root
     group: root
-  notify: restart openvpn
+  notify: Restart openvpn
 
 - name: Ensure openvpn service is enabled and started
   ansible.builtin.service:

@@ -18,7 +18,7 @@ Example Playbook
 ```yaml
     - hosts: servers
       roles:
-         - { role: username.rolename, role_nordvpn_username: {{ nordvpn_username }}, role_nordvpn_password: {{ nordvpn_password }},
+         - { role: nordvpn, role_nordvpn_username: {{ nordvpn_username }}, role_nordvpn_password: {{ nordvpn_password }},
              role_nordvpn_server: us10036.nordvpn.com.udp1194 }
 ```
 
