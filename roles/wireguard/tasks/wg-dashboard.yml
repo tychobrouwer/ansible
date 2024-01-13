@@ -3,6 +3,7 @@
   ansible.builtin.package:
     name:
       - net-tools
+      - git
     state: present
 
 - name: Git clone wireguard dashboard repository
@@ -42,7 +43,7 @@
     owner: root
     group: root
 
-- name: Ensure wg dashboard service is enabled and started
+- name: Ensure wg dashboard service is enabled and started.changed
   ansible.builtin.service:
     name: wg-dashboard
     state: started

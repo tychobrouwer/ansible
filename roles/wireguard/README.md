@@ -29,7 +29,7 @@ The ```role_interface_name``` variable can be set to change the name of the wire
 Requirements
 ----------------
 
-Needs Python 3 to be installed.
+Needs Python3 and git to be installed.
 
 Example Playbook
 ----------------
