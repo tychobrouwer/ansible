@@ -1,0 +1,10 @@
+---
+- name: Ensure mounted folder exists
+  ansible.builtin.file:
+    path: "{{ item.dest }}"
+    state: directory
+    recurse: true
+    mode: "0775"
+    owner: "{{ role_mountuser_name }}"
+    group: "{{ role_mountuser_group }}"
+  with_items: "{{ role_mounted_folders }}"
