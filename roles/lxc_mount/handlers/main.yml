@@ -1,5 +1,0 @@
----
-# handlers file for lxc_mount
-- name: Restart lxc
-  ansible.builtin.command: pct reboot {{ role_container_id }}
-  changed_when: true

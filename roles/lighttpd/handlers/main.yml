@@ -1,6 +1,0 @@
----
-# handlers file for lighttpd
-- name: Restart lighttpd
-  ansible.builtin.service:
-    name: lighttpd
-    state: restarted

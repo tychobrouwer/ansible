@@ -1,7 +1,0 @@
----
-# vars file for lxc_mount
-role_mountuser_uid: 3500
-role_mountuser_gid: 3500
-role_mountuser_name: mountuser
-role_mountuser_group: mountuser
-role_mountuser_users: []

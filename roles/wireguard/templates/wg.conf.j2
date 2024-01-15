@@ -1,8 +1,0 @@
-[Interface]
-Address = {{ role_host_wireguard_address }}
-ListenPort = {{ role_wireguard_port }}
-PrivateKey = {{ role_wireguard_private_key }}
-
-PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
-

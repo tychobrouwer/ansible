@@ -1,7 +1,0 @@
----
-# handlers file for nordvpn
-- name: Restart openvpn
-  ansible.builtin.service:
-    name: openvpn@client
-    state: restarted
-    enabled: true
